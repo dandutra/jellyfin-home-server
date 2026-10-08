@@ -1,0 +1,12 @@
+# Raw command output, scan logs, anything with service tags, IPs or file names
+local/
+
+# Never commit these
+*.iso
+*.wim
+*.swm
+autounattend.xml
+id_*
+*.pem
+
+.DS_Store

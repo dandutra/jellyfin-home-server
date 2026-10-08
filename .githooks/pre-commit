@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Block commits that leak home-network details into this public repo.
+# Enable once per clone:  git config core.hooksPath .githooks
+# Docs that need an example address should use 192.0.2.x (RFC 5737).
+# --all checks every tracked file instead of the staged diff (used by CI).
+
+set -euo pipefail
+
+PRIVATE_IP='(^|[^0-9.])(10\.[0-9]{1,3}|172\.(1[6-9]|2[0-9]|3[01])|192\.168)\.[0-9]{1,3}\.[0-9]{1,3}([^0-9]|$)'
+MAC='([0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}'
+PATTERN="$PRIVATE_IP|$MAC"
+
+if [[ "${1:-}" == "--all" ]]; then
+  hits="$(git grep -nIE "$PATTERN" -- . ':!.githooks/pre-commit' || true)"
+else
+  hits="$(git diff --cached -U0 --no-color -- . ':!.githooks/pre-commit' | grep -E '^\+[^+]' | grep -E "$PATTERN" || true)"
+fi
+
+if [[ -n "$hits" ]]; then
+  echo "Possible private IP or MAC address in this change:" >&2
+  echo "$hits" >&2
+  echo "Use 192.0.2.x for examples, or keep real output in local/." >&2
+  exit 1
+fi
