@@ -37,11 +37,25 @@ echo "Looking for USB-worm droppings in the top-level folder..."
 find "$TARGET" -maxdepth 1 \( -iname 'autorun.inf' -o -iname '*.lnk' -o -iname '*.exe' -o -iname '*.vbs' -o -iname '*.js' \) \
   | tee "$LOG_DIR/root-suspicious-$STAMP.txt"
 
-echo "Scanning $TARGET (large drives take hours)..."
+# clamscan --recursive finds no files on macOS's read-only NTFS mount and still
+# exits 0, so hand it an explicit file list instead.
+LIST="$LOG_DIR/filelist-$STAMP.txt"
+echo "Listing files..."
+find "$TARGET" -type f >"$LIST" || echo "warning: some folders could not be read; see the errors above"
+total=$(wc -l <"$LIST" | tr -d ' ')
+[[ $total -gt 0 ]] || die "no files found under $TARGET (on an external drive, allow Terminal access to removable volumes)"
+
+echo "Scanning $total files in $TARGET (large drives take hours)..."
 set +e
-clamscan --recursive --infected --log="$LOG" "$TARGET"
+clamscan --infected --file-list="$LIST" --log="$LOG"
 status=$?
 set -e
+
+scanned=$(sed -n 's/^Scanned files: //p' "$LOG" | tail -1)
+if [[ $status -eq 0 && ${scanned:-0} -eq 0 ]]; then
+  echo "clamscan scanned 0 of $total files; not reporting this as clean." >&2
+  status=2
+fi
 
 echo
 case $status in

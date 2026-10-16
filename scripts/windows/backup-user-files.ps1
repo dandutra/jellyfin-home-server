@@ -59,6 +59,8 @@ foreach ($user in $users) {
         $dst = Join-Path $root "$($user.Name)\$folder"
         $log = Join-Path $root "robocopy-$($user.Name)-$folder.log"
         Write-Output "Copying $src -> $dst"
+        # robocopy can't create nested destination folders on a macOS SMB share (ERROR 2)
+        New-Item -ItemType Directory -Path $dst -Force | Out-Null
         # /E all subfolders, /XJ skip junctions (avoids loops), /R:1 /W:1 don't hang on locked files
         robocopy $src $dst /E /XJ /R:1 /W:1 /NP /XF $excludeFiles /LOG:$log | Out-Null
         # robocopy exit codes 0-7 are success variants; 8+ means something failed
