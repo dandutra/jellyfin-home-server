@@ -4,7 +4,8 @@ One file per problem that took real effort to get past, named `NNN-short-title.m
 
 | # | Roadblock | Phase |
 |---|---|---|
-| | *none yet* | |
+| 001 | [ClamAV reported "clean" after scanning 0 files](001-clamscan-scanned-nothing.md) | 1 |
+| 002 | [Robocopy to a macOS SMB share copied 0 files](002-robocopy-to-macos-smb.md) | 1 |
 
 ## Template
 

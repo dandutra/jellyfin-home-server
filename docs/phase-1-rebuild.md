@@ -12,7 +12,7 @@ Goal: get from "old laptop I don't trust" to a clean, activated Windows 11 Pro i
 
 | Item | Notes |
 |---|---|
-| USB stick, 16 GB+ | Gets erased |
+| USB stick, 16–64 GB | Gets erased. The build script refuses anything bigger |
 | Mac with free space | Receives the backup over SMB, so the external photo drive stays disconnected |
 | Phillips #0 screwdriver, plastic pry tool | For the bottom cover |
 | Air pump / compressor | Fan cleaning |
@@ -85,8 +85,19 @@ brew install clamav
 ./scripts/mac/scan-backup.sh ~/laptop-backup
 ```
 
-- **Exit 0** means clean. **Exit 1** means infected files were found: delete the files it names before restoring anything.
+- **Exit 0** means clean. **Exit 1** means infected files were found: delete the files it names before restoring anything. **Exit 2** means clamscan had an error or scanned 0 files. Don't treat that as clean.
 - Copy the summary lines (counts only) into the journal.
+
+**Any external drive that was ever connected to the laptop** gets the same scan. Here that's the photo drive:
+
+```bash
+ls /Volumes                     # find the drive's name
+caffeinate -i ./scripts/mac/scan-backup.sh "/Volumes/<DriveName>"
+```
+
+- macOS mounts NTFS drives read-only, which is fine for a scan. Allow Terminal access to removable volumes if macOS asks.
+- `caffeinate` keeps the Mac awake. Keep the lid open and the charger connected: a large drive takes hours.
+- The script lists suspicious files at the top level of the drive (`autorun.inf`, `.exe`, `.lnk`...). Check their dates before you panic: drives often ship with the maker's own setup files.
 
 ## 4. Build the install USB (on the Mac)
 
@@ -100,9 +111,9 @@ brew install clamav
    Find the line with the stick's size (~16 GB) and note its id, e.g. `disk4`. **Disconnect any other external drive first**, so it can't be picked by mistake.
 3. Build the stick:
    ```bash
-   ./scripts/mac/build-usb.sh ~/Downloads/Win11_*.iso disk4 ~/Downloads/Latitude_3410_*.exe
+   ./scripts/mac/build-usb.sh ~/Downloads/<windows-iso>.iso disk4 ~/Downloads/Latitude_3410_*.exe
    ```
-   Leave out the last argument if the BIOS is already up to date.
+   Use the ISO's exact file name (Microsoft changes the naming between releases). Leave out the last argument if the BIOS is already up to date.
    The script:
    - refuses internal disks and anything bigger than 64 GB
    - makes you type the disk id to confirm
@@ -162,7 +173,7 @@ Apply, exit.
 4. Edition: with the Pro key in firmware, Setup normally skips this screen. If it asks, choose **Windows 11 Pro**. ⚠️ Choosing Home installs and activates as Home.
 5. **Custom install**. Delete **every partition** on the ~238 GB drive (Disk 0) until it shows only *Unallocated Space*. If the SSD is installed it appears as another disk (~465 GB). **Don't touch it.**
 6. Select the unallocated space → Next.
-7. **Setup screens (OOBE):** region, keyboard, network.
+7. **Setup screens (OOBE):** region, keyboard, network. Keep Ethernet unplugged and skip Wi-Fi. The local-account options below work best offline.
 8. **Local account:** when it asks for a Microsoft account, try these in order:
    1. **Sign-in options → Domain join instead** (if shown), then enter a local admin username.
    2. Press **Shift + F10** to open a command prompt, then run `start ms-cxh:localonly`. A local-account dialog opens.
@@ -179,7 +190,11 @@ Apply, exit.
 4. **Hostname:** in an admin PowerShell, run `Rename-Computer -NewName homeserver -Restart`.
 5. **Your wife's account:** Settings → Accounts → Other users → Add account → her Microsoft account. Leave it as a **Standard user**.
 6. **SSD, if installed:** Disk Management → initialize as **GPT** → New Simple Volume → **NTFS**, letter **D:**, label `Media`.
-7. **Restore files:** turn File Sharing back on on the Mac, open `\\<mac-ip>\laptop-backup` from each account, copy the scanned files back, then turn File Sharing off and delete `~/laptop-backup` from the Mac.
+7. **Restore files:** turn File Sharing back on on the Mac, open `\\<mac-ip>\laptop-backup` from each account, copy the scanned files back, then turn File Sharing off and delete the backup from the Mac:
+   ```bash
+   chflags -R nouchg ~/laptop-backup   # macOS may have locked folders that were Read-only on Windows
+   rm -rf ~/laptop-backup
+   ```
 8. Run `pre-wipe-checks.ps1` again and keep the output in `local/` as a before/after record (Edition, License, Storage controllers should all show the new state).
 
 ## Phase 1 done ✅

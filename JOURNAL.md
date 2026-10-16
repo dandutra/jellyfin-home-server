@@ -35,3 +35,15 @@ A dated log of the build. Short entries; anything that took real effort to solve
 - **Changed the backup target:** at ~15 GB the backup fits on the Mac, so it now goes over SMB (macOS File Sharing) and the photo drive never touches this laptop. The backup script takes `-Destination` (a drive root or a `\\host\share` path) instead of a drive letter.
   - Expected trap: drives mapped in a normal window are invisible in an elevated one (UAC split token), and the script needs Administrator to read both profiles. The runbook uses `net use \\host\share` plus the UNC path in the elevated window instead.
 - The laptop runs Kaspersky, which puts Defender in passive mode. The pre-backup scan is a Kaspersky full scan, not Defender Offline. Two real-time scanners on one machine conflict.
+
+## 2026-10-16: Scans, backup and install USB
+
+- **Kaspersky full scan** of the laptop: 0 threats. The report had about 5,500 other entries: files inside archives it could not unpack, a few password-protected PDFs and locked browser-cache files. None were detections.
+- **Photo drive scan:** the first ClamAV run took 6 seconds and scanned 0 files, but still reported "clean". `clamscan --recursive` finds nothing on the read-only NTFS mount that macOS uses. Fixed by passing an explicit file list, and the script now fails if it scans 0 files. See [roadblock 001](docs/roadblocks/001-clamscan-scanned-nothing.md).
+  - Full scan: 212,747 files, 265.77 GiB, 0 infected, 4 hours.
+  - `Autorun.inf` and an `.exe` at the drive root looked like USB-worm traces. They are the drive maker's factory files from 2018, and the autorun only sets the drive icon.
+- **Backup to the Mac** worked on the third run: 3,161 files, 12 GB, 0 failures. Run 1 failed with robocopy error 2 on nested folders. Run 2 failed because robocopy copied the Read-only attribute of the shell folders, and macOS SMB turned it into a lock. See [roadblock 002](docs/roadblocks/002-robocopy-to-macos-smb.md).
+  - ClamAV scan of the backup: 3,176 files (with the robocopy logs), 4.42 GiB scanned, 0 infected.
+  - An iPhone backup on the laptop is outside the script's folders. It was left out on purpose, because the photo drive already has a copy.
+- **Install USB:** the Windows 11 ISO is build 26300. The wimlib split made 3 parts from a 7.7 GB `install.wim`. The image lists Windows 11 Pro. I bought a 32 GB stick because no store had 16 GB ones.
+  - The last step, `diskutil eject`, failed because Spotlight had started to index the new volume. The script now puts a `.metadata_never_index` file on the stick and forces the unmount after `sync`.
