@@ -33,7 +33,7 @@ The new SSD is **not required for Phase 1**. Windows goes on the existing NVMe d
 3. Paste the output to Claude, **but remove the service tag line first**.
 4. Things to check in the output:
    - **License status** says `Licensed`.
-   - **Firmware key** probably says `none`. We already know this, and it means you must **choose Windows 11 Pro by hand** in step 8.
+   - **Firmware key** should say `present (... Professional OEM ...)`. Setup then picks Pro by itself. If it says `none`, you must **choose Windows 11 Pro by hand** in step 8.
    - **Storage controllers:** if you see "Intel RST" or "RAID", the BIOS is in RAID On mode. We change that in step 7.
    - **User folders:** add up the sizes to see how much the backup needs. If Desktop/Documents are tiny but `OneDrive` is big, Windows has moved those folders into OneDrive.
 5. Your wife signs in at <https://account.microsoft.com/devices> and confirms the laptop is listed. That's the fallback route if activation fails after the reinstall.
@@ -132,7 +132,7 @@ Apply, exit.
 1. Restart, tap **F12** → select the **UEFI** USB entry.
 2. Language/keyboard → **Install now**.
 3. Product key → **I don't have a product key**.
-4. Edition → **Windows 11 Pro**. ⚠️ If you choose Home, it installs and activates as Home. The digital license is for Pro.
+4. Edition: with the Pro key in firmware, Setup normally skips this screen. If it asks, choose **Windows 11 Pro**. ⚠️ Choosing Home installs and activates as Home.
 5. **Custom install**. Delete **every partition** on the ~238 GB drive (Disk 0) until it shows only *Unallocated Space*. If the SSD is installed it appears as another disk (~465 GB). **Don't touch it.**
 6. Select the unallocated space → Next.
 7. **Setup screens (OOBE):** region, keyboard, network.

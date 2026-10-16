@@ -40,8 +40,11 @@ $excludeFiles = '*.exe', '*.msi', '*.dll', '*.scr', '*.com', '*.bat', '*.cmd', '
     '*.vbs', '*.vbe', '*.js', '*.jse', '*.wsf', '*.hta', '*.lnk', '*.url', '*.pif',
     '*.docm', '*.xlsm', '*.pptm', '*.dotm', 'desktop.ini', 'Thumbs.db'
 
-$skipUsers = 'Public', 'Default', 'Default User', 'All Users'
-$users = Get-ChildItem C:\Users -Directory -Force | Where-Object { $skipUsers -notcontains $_.Name }
+# Real user profiles only. Listing C:\Users also returns localized junctions
+# (e.g. the Portuguese "All Users") and template profiles that a name filter misses.
+$users = Get-CimInstance Win32_UserProfile -Filter 'Special = False' |
+    Where-Object { Test-Path -LiteralPath $_.LocalPath } |
+    ForEach-Object { Get-Item -LiteralPath $_.LocalPath }
 
 $failed = $false
 foreach ($user in $users) {

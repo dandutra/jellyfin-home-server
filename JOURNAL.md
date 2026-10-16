@@ -25,3 +25,9 @@ A dated log of the build. Short entries; anything that took real effort to solve
 - Confirmed the laptop is listed under the Microsoft account that holds the digital license. That's the fallback if reactivation fails.
 - Opened the case (out of runbook order, since the tools arrived first) and cleaned the fan and heatsink.
 - **The 2.5" bay already has the SATA cable and bracket**, so no AliExpress order and no 10–12 day wait. The SSD goes in while the case is open.
+- SSD installed. The old Windows lists it as "Not Initialized" in Disk Management. Left it alone; it gets formatted after the clean install.
+- Ran `pre-wipe-checks.ps1`:
+  - **Correction to 2026-10-08:** the firmware *does* hold a key, `Professional OEM:DM`. The earlier manual check came back empty, but the script run as Administrator found it. Setup should pick Pro on its own.
+  - Both disks show bus type `RAID` under "Intel RST Premium", which confirms the BIOS is in RAID On mode. Switching to AHCI before the install is required, not optional.
+  - The backup is small, ~15 GB in total. The biggest folder is a Downloads folder, mostly installers, which the backup script skips.
+  - **Script bug:** listing `C:\Users` by folder name picked up localized junctions and template profiles ("All Users" and "Default User" show up under their Portuguese names). Fixed by enumerating real profiles via `Win32_UserProfile` (`Special = False`).

@@ -68,8 +68,11 @@ if ($sls.OA3xOriginalProductKeyDescription) {
 $lines.Add('')
 
 $lines.Add('User folders (GB), to size the backup:')
-$skip = 'Public', 'Default', 'Default User', 'All Users'
-Get-ChildItem C:\Users -Directory -Force | Where-Object { $skip -notcontains $_.Name } | ForEach-Object {
+# Real user profiles only. Listing C:\Users also returns localized junctions
+# (e.g. the Portuguese "All Users") and template profiles that a name filter misses.
+Get-CimInstance Win32_UserProfile -Filter 'Special = False' |
+    Where-Object { Test-Path -LiteralPath $_.LocalPath } |
+    ForEach-Object { Get-Item -LiteralPath $_.LocalPath } | ForEach-Object {
     $user = $_
     $lines.Add("  $($user.Name):")
     foreach ($folder in 'Desktop', 'Documents', 'Pictures', 'Videos', 'Music', 'Downloads', 'OneDrive') {
