@@ -61,8 +61,10 @@ foreach ($user in $users) {
         Write-Output "Copying $src -> $dst"
         # robocopy can't create nested destination folders on a macOS SMB share (ERROR 2)
         New-Item -ItemType Directory -Path $dst -Force | Out-Null
-        # /E all subfolders, /XJ skip junctions (avoids loops), /R:1 /W:1 don't hang on locked files
-        robocopy $src $dst /E /XJ /R:1 /W:1 /NP /XF $excludeFiles /LOG:$log | Out-Null
+        # /E all subfolders, /XJ skip junctions (avoids loops), /R:1 /W:1 don't hang on locked files.
+        # /COPY:DT /DCOPY:DT leave attributes behind: shell folders like Documents are marked
+        # Read-only, and macOS SMB turns that into a lock (uchg) that blocks writing into them.
+        robocopy $src $dst /E /XJ /R:1 /W:1 /NP /COPY:DT /DCOPY:DT /XF $excludeFiles /LOG:$log | Out-Null
         # robocopy exit codes 0-7 are success variants; 8+ means something failed
         if ($LASTEXITCODE -ge 8) {
             Write-Warning "Errors copying $src (exit $LASTEXITCODE), see $log"
