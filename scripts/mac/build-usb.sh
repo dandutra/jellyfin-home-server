@@ -42,6 +42,8 @@ read -r -p "Type the disk id (${DISK#/dev/}) to continue: " answer
 
 diskutil eraseDisk FAT32 "$VOLUME_NAME" GPT "$DISK"
 DST="/Volumes/$VOLUME_NAME"
+# Keep Spotlight off the stick: its indexer holds the volume open and blocks the eject.
+touch "$DST/.metadata_never_index"
 
 SRC="$(hdiutil attach -nobrowse -readonly "$ISO" | awk -F'\t' '/\/Volumes\//{print $NF}')"
 [[ -d "$SRC" ]] || die "could not mount ISO"
@@ -63,5 +65,6 @@ if [[ -n "$BIOS_EXE" ]]; then
 fi
 
 sync
-diskutil eject "$DISK"
+# Everything is flushed by now, so forcing the unmount can't lose data.
+diskutil eject "$DISK" || { diskutil unmountDisk force "$DISK" && diskutil eject "$DISK"; }
 echo "Done. The stick is ejected and ready."
