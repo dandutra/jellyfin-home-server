@@ -19,3 +19,9 @@ A dated log of the build. Short entries; anything that took real effort to solve
 - **4K:** only the LG TV can play 4K. The Fire TV Stick is 1080p. 4K is direct play only; the UHD 620 can't realistically convert 4K HDR to SDR on the fly. See [ADR 004](docs/decisions/004-4k-direct-play-only.md).
 - **Scope:** decided to add a Phase 3 (qBittorrent + Sonarr/Radarr/Prowlarr). Its folder layout is fixed now so hardlinks will work later. See [ADR 007](docs/decisions/007-config-and-media-layout.md).
 - **Backup drive:** the only external drive is also the photo backup drive, and it has already been connected to this laptop. It gets a full ClamAV scan from the Mac along with the backup.
+
+## 2026-10-16: Phase 1 begins
+
+- Confirmed the laptop is listed under the Microsoft account that holds the digital license. That's the fallback if reactivation fails.
+- Opened the case (out of runbook order, since the tools arrived first) and cleaned the fan and heatsink.
+- **The 2.5" bay already has the SATA cable and bracket**, so no AliExpress order and no 10–12 day wait. The SSD goes in while the case is open.
