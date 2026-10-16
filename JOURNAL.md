@@ -31,3 +31,7 @@ A dated log of the build. Short entries; anything that took real effort to solve
   - Both disks show bus type `RAID` under "Intel RST Premium", which confirms the BIOS is in RAID On mode. Switching to AHCI before the install is required, not optional.
   - The backup is small, ~15 GB in total. The biggest folder is a Downloads folder, mostly installers, which the backup script skips.
   - **Script bug:** listing `C:\Users` by folder name picked up localized junctions and template profiles ("All Users" and "Default User" show up under their Portuguese names). Fixed by enumerating real profiles via `Win32_UserProfile` (`Special = False`).
+- BIOS 1.39.0 is already Dell's latest for the 3410, so the BIOS flash step is skipped.
+- **Changed the backup target:** at ~15 GB the backup fits on the Mac, so it now goes over SMB (macOS File Sharing) and the photo drive never touches this laptop. The backup script takes `-Destination` (a drive root or a `\\host\share` path) instead of a drive letter.
+  - Expected trap: drives mapped in a normal window are invisible in an elevated one (UAC split token), and the script needs Administrator to read both profiles. The runbook uses `net use \\host\share` plus the UNC path in the elevated window instead.
+- The laptop runs Kaspersky, which puts Defender in passive mode. The pre-backup scan is a Kaspersky full scan, not Defender Offline. Two real-time scanners on one machine conflict.

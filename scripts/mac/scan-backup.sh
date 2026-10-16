@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Scan the backup drive with ClamAV from macOS before anything is restored.
+# Scan a backup with ClamAV from macOS before anything is restored.
 #
 # Windows malware can't execute on macOS, so the Mac is a safe place to inspect
-# files copied off a suspect Windows machine. Scans the whole volume (not just
-# the backup folder) because the drive itself was attached to that machine.
+# files copied off a suspect Windows machine. Pass a backup folder, or a whole
+# external volume if that drive was ever attached to the suspect machine.
 #
-# Usage: scan-backup.sh </Volumes/DriveName>
+# Usage: scan-backup.sh <folder-or-/Volumes/DriveName>
 # Requires: brew install clamav
 # Logs land in local/ (gitignored): they contain file names.
 
@@ -13,7 +13,7 @@ set -euo pipefail
 
 die() { echo "error: $*" >&2; exit 1; }
 
-[[ $# -eq 1 ]] || die "usage: $0 </Volumes/DriveName>"
+[[ $# -eq 1 ]] || die "usage: $0 <folder-or-/Volumes/DriveName>"
 TARGET="$1"
 [[ -d "$TARGET" ]] || die "not a directory: $TARGET"
 command -v clamscan >/dev/null || die "ClamAV not installed (brew install clamav)"
@@ -33,7 +33,7 @@ fi
 echo "Updating virus definitions..."
 freshclam
 
-echo "Looking for USB-worm droppings in the drive root..."
+echo "Looking for USB-worm droppings in the top-level folder..."
 find "$TARGET" -maxdepth 1 \( -iname 'autorun.inf' -o -iname '*.lnk' -o -iname '*.exe' -o -iname '*.vbs' -o -iname '*.js' \) \
   | tee "$LOG_DIR/root-suspicious-$STAMP.txt"
 

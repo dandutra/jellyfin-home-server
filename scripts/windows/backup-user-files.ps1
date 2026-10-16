@@ -8,11 +8,16 @@
     most likely to carry an infection back onto the clean install, and
     anything we need of that kind can be downloaded again.
 
-    Everything lands in <Drive>:\laptop-backup-<yyyy-MM>\<user>\<folder>.
+    Everything lands in <Destination>\laptop-backup-<yyyy-MM>\<user>\<folder>.
     A robocopy log per folder goes next to it.
 
-.PARAMETER Drive
-    Drive letter of the external backup drive, e.g. E.
+    Run it from an elevated PowerShell so it can read every profile. A network
+    share mapped in a normal (non-elevated) window is invisible to an elevated
+    one, so pass the share's UNC path instead of a mapped drive letter.
+
+.PARAMETER Destination
+    Where to write the backup: a drive root (E:\) or a network share
+    (\\192.0.2.10\laptop-backup).
 
 .PARAMETER IncludeOneDrive
     Also copy each user's OneDrive folder. Online-only files get downloaded
@@ -20,17 +25,17 @@
     cloud anyway, so this is off by default.
 
 .EXAMPLE
-    powershell -ExecutionPolicy Bypass -File .\backup-user-files.ps1 -Drive E
+    powershell -ExecutionPolicy Bypass -File .\backup-user-files.ps1 -Destination \\192.0.2.10\laptop-backup
 #>
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory)][ValidatePattern('^[D-Zd-z]$')][string]$Drive,
+    [Parameter(Mandatory)][string]$Destination,
     [switch]$IncludeOneDrive
 )
 
 $ErrorActionPreference = 'Stop'
-$root = "$($Drive.ToUpper()):\laptop-backup-$(Get-Date -Format 'yyyy-MM')"
-if (-not (Test-Path "$($Drive.ToUpper()):\")) { throw "Drive $Drive`: not found" }
+if (-not (Test-Path -LiteralPath $Destination)) { throw "Destination not reachable: $Destination" }
+$root = Join-Path $Destination "laptop-backup-$(Get-Date -Format 'yyyy-MM')"
 New-Item -ItemType Directory -Path $root -Force | Out-Null
 
 $folders = 'Desktop', 'Documents', 'Pictures', 'Videos', 'Music', 'Downloads'

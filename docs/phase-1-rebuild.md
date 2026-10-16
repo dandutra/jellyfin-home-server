@@ -13,7 +13,7 @@ Goal: get from "old laptop I don't trust" to a clean, activated Windows 11 Pro i
 | Item | Notes |
 |---|---|
 | USB stick, 16 GB+ | Gets erased |
-| External backup drive | Holds the backup in its own folder |
+| Mac with free space | Receives the backup over SMB, so the external photo drive stays disconnected |
 | Phillips #0 screwdriver, plastic pry tool | For the bottom cover |
 | Air pump / compressor | Fan cleaning |
 | 500 GB 2.5" 7 mm SATA SSD | Optional in this phase (see step 6) |
@@ -37,32 +37,55 @@ The new SSD is **not required for Phase 1**. Windows goes on the existing NVMe d
    - **Storage controllers:** if you see "Intel RST" or "RAID", the BIOS is in RAID On mode. We change that in step 7.
    - **User folders:** add up the sizes to see how much the backup needs. If Desktop/Documents are tiny but `OneDrive` is big, Windows has moved those folders into OneDrive.
 5. Your wife signs in at <https://account.microsoft.com/devices> and confirms the laptop is listed. That's the fallback route if activation fails after the reinstall.
-6. Write down the **exact Dell model**, then download the latest **BIOS** for the Latitude 3410 from <https://www.dell.com/support> (enter the service tag → Drivers & Downloads → BIOS). Save the `.exe` to the **Mac**, not the laptop.
+6. Compare **BIOS version** in the output with the latest one for the Latitude 3410 at <https://www.dell.com/support> (enter the service tag → Drivers & Downloads → BIOS). If Dell has a newer one, download the `.exe` to the **Mac**, not the laptop. If it's already the latest, skip step 5.
 
-## 2. Backup (on the laptop)
+## 2. Backup to the Mac over the network
 
-1. Run **Microsoft Defender Offline** before connecting the backup drive: Windows Security → Virus & threat protection → Scan options → *Microsoft Defender Antivirus (offline scan)* → Scan now. The laptop reboots, scans for about 15 minutes and boots back into Windows. The results are under Protection history.
-2. Connect the external drive and note its drive letter (e.g. `E`).
-3. Run the backup:
+The backup goes to a shared folder on the Mac, not to a USB drive. That way the external photo drive never gets plugged into this laptop. The Mac needs free space for the backup (about 15 GB here, less after the excluded files).
+
+**On the laptop:**
+
+1. **Antivirus scan before copying anything off.** Use the antivirus that's already active on the laptop:
+   - **Kaspersky (or another third-party antivirus):** run a **Full Scan** from its own app. While it's installed, Defender is switched to passive mode and its Offline scan may be greyed out. Don't install a second antivirus next to it, because two real-time scanners fight over the same files.
+   - **Defender only:** Windows Security → Virus & threat protection → Scan options → *Microsoft Defender Antivirus (offline scan)* → Scan now.
+
+   Write the result in the journal (number of threats found, no file names).
+
+**On the Mac:**
+
+2. Create the destination folder: `mkdir ~/laptop-backup`.
+3. System Settings → General → Sharing → turn on **File Sharing**, then click ⓘ:
+   - **Shared Folders:** add `~/laptop-backup`, with your user set to *Read & Write*.
+   - **Options…:** tick **Share files and folders using SMB**, and tick your user under *Windows File Sharing*. It asks for your Mac password.
+4. Note the Mac's IP address: `ipconfig getifaddr en0`.
+
+**On the laptop, in PowerShell as Administrator:**
+
+5. Connect to the share. Replace the IP and user with yours; it asks for the Mac password:
    ```powershell
-   powershell -ExecutionPolicy Bypass -File .\backup-user-files.ps1 -Drive E
+   net use \\<mac-ip>\laptop-backup /user:<mac-username>
+   ```
+   > Use the `\\ip\share` path, **not** a drive letter mapped in File Explorer. Windows hides drives mapped in a normal window from elevated (Administrator) windows, and the script needs Administrator to read both profiles.
+6. Run the backup:
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File .\backup-user-files.ps1 -Destination \\<mac-ip>\laptop-backup
    ```
    - Add `-IncludeOneDrive` only if some OneDrive files are not actually synced to the cloud.
    - Executables, scripts, shortcuts and macro-enabled Office files are skipped on purpose.
-4. Copy over anything the script doesn't cover, for example files your wife keeps in other folders. Put it into the same `laptop-backup-YYYY-MM` folder.
-5. Browsers: make sure sync is on (Chrome/Edge account), or export bookmarks and passwords to the backup folder.
-6. **Safely eject** the drive and unplug it. It doesn't get connected to this laptop again until the clean install is done.
+7. Copy over anything the script doesn't cover into the same `laptop-backup-YYYY-MM` folder.
+8. Browsers: make sure sync is on (Chrome/Edge account), or export bookmarks and passwords to the backup folder.
+9. Disconnect: `net use \\<mac-ip>\laptop-backup /delete`.
 
-## 3. Scan the drive (on the Mac)
+**On the Mac:** turn **File Sharing off** again once the copy is done.
+
+## 3. Scan the backup (on the Mac)
 
 ```bash
 brew install clamav
-./scripts/mac/scan-backup.sh /Volumes/<DriveName>
+./scripts/mac/scan-backup.sh ~/laptop-backup
 ```
 
-- It scans the **whole drive**, photos included, because the drive was connected to the laptop. On a large drive this can take hours. Let it run overnight.
 - **Exit 0** means clean. **Exit 1** means infected files were found: delete the files it names before restoring anything.
-- Also look at `local/root-suspicious-*.txt`. An `autorun.inf` or `.lnk` file in the drive's root folder that you didn't put there is a classic sign of a USB worm.
 - Copy the summary lines (counts only) into the journal.
 
 ## 4. Build the install USB (on the Mac)
@@ -74,23 +97,27 @@ brew install clamav
    brew install wimlib
    diskutil list external
    ```
-   Find the line with the stick's size (~16 GB) and note its id, e.g. `disk4`. **Disconnect the external backup drive first**, so it can't be picked by mistake.
+   Find the line with the stick's size (~16 GB) and note its id, e.g. `disk4`. **Disconnect any other external drive first**, so it can't be picked by mistake.
 3. Build the stick:
    ```bash
    ./scripts/mac/build-usb.sh ~/Downloads/Win11_*.iso disk4 ~/Downloads/Latitude_3410_*.exe
    ```
+   Leave out the last argument if the BIOS is already up to date.
    The script:
    - refuses internal disks and anything bigger than 64 GB
    - makes you type the disk id to confirm
    - formats the stick FAT32 + GPT
    - copies the installer
    - splits `install.wim` with wimlib
-   - copies the BIOS `.exe` onto the stick
+   - copies the BIOS `.exe` onto the stick, if given
    - lists the editions in the image
 
    > **Why the split:** UEFI firmware boots reliably only from FAT32. FAT32 can't hold a file over 4 GiB, and `install.wim` is bigger than that. Windows Setup accepts a split `install.swm` with no extra steps.
 
 ## 5. Update the BIOS (on the laptop)
+
+Skip this step if step 1.6 showed the BIOS is already the latest version.
+
 
 1. Plug the laptop into **AC power** (the BIOS update refuses to run on battery alone) and insert the stick.
 2. Restart and tap **F12** at the Dell logo → **BIOS Flash Update** → choose the `.exe` on the stick → confirm.
@@ -152,7 +179,7 @@ Apply, exit.
 4. **Hostname:** in an admin PowerShell, run `Rename-Computer -NewName homeserver -Restart`.
 5. **Your wife's account:** Settings → Accounts → Other users → Add account → her Microsoft account. Leave it as a **Standard user**.
 6. **SSD, if installed:** Disk Management → initialize as **GPT** → New Simple Volume → **NTFS**, letter **D:**, label `Media`.
-7. **Restore files:** reconnect the backup drive, copy the scanned files back into each account, and eject the drive.
+7. **Restore files:** turn File Sharing back on on the Mac, open `\\<mac-ip>\laptop-backup` from each account, copy the scanned files back, then turn File Sharing off and delete `~/laptop-backup` from the Mac.
 8. Run `pre-wipe-checks.ps1` again and keep the output in `local/` as a before/after record (Edition, License, Storage controllers should all show the new state).
 
 ## Phase 1 done ✅
