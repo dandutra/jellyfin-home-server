@@ -47,3 +47,12 @@ A dated log of the build. Short entries; anything that took real effort to solve
   - An iPhone backup on the laptop is outside the script's folders. It was left out on purpose, because the photo drive already has a copy.
 - **Install USB:** the Windows 11 ISO is build 26300. The wimlib split made 3 parts from a 7.7 GB `install.wim`. The image lists Windows 11 Pro. I bought a 32 GB stick because no store had 16 GB ones.
   - The last step, `diskutil eject`, failed because Spotlight had started to index the new volume. The script now puts a `.metadata_never_index` file on the stick and forces the unmount after `sync`.
+
+## 2026-10-16: Clean install
+
+- **F2 didn't open the BIOS**, not even with Fn. Windows Fast Startup makes the boot too quick to catch. I opened it from Windows instead: Settings → Recovery → Advanced startup → UEFI Firmware Settings.
+- The BIOS has Dell's newer setup screen, not the classic menu tree the runbook assumed. Its search box found every setting: AHCI, USB boot, Secure Boot, Primarily AC Use, Wake on AC, and the USB stick first in the boot order (after the AHCI switch, the old Windows can't start, so the Windows route works only once).
+- Setup asked for neither a product key nor an edition. It read the Pro key from the firmware.
+- **Setup listed the new SSD as Disk 0 and the old NVMe as Disk 1**, the opposite of the runbook. I went by size: deleted the four partitions on the 238 GB disk and left the 477 GB SSD and the USB stick alone.
+- **Local account:** on build 26300 the network screen has no "continue without internet" option. `Shift + F10` → `start ms-cxh:localonly` worked straight from that screen and opened the local-account dialog. No `autounattend.xml` needed.
+- Activation failed offline ("can't connect"), as expected. On Wi-Fi it activated within minutes: **Windows 11 Pro, Active**.

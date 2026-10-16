@@ -151,40 +151,47 @@ Take photos of each step for `docs/img/`. Make sure no stickers with the service
 
 ## 7. BIOS settings
 
-Tap **F2** at the Dell logo. Menu names vary slightly between BIOS versions:
+1. Insert the USB stick and connect AC power.
+2. Open the BIOS setup from Windows: **Settings → System → Recovery → Advanced startup: Restart now**, then **Troubleshoot → Advanced options → UEFI Firmware Settings → Restart**. (Portuguese: *Configurações → Sistema → Recuperação → Inicialização avançada*, then *Solucionar problemas → Opções avançadas → Configurações de Firmware UEFI*.)
+   > Tapping **F2** at the Dell logo often doesn't work: Windows Fast Startup makes the boot too quick to catch. After a full power-off (hold the power button), F2 and F12 work again.
+3. The 3410 on BIOS 1.39.0 has Dell's newer setup screen. Use its **search box** to find each setting:
 
-| Setting | Where (approx.) | Value | Why |
+| Search for | Setting | Value | Why |
 |---|---|---|---|
-| SATA/NVMe Operation | System Configuration / Storage | **AHCI** | In RAID On, Windows Setup shows no drives |
-| Secure Boot | Secure Boot | **Enabled** | Blocks unsigned bootloaders and bootkits |
-| Primary Battery Charge Configuration | Power Management | **Primarily AC Use** | The battery is at 16% health and stays plugged in |
-| AC Behavior / Wake on AC | Power Management | **Enabled** | Boots back up after a power cut |
-| Admin (setup) password | Security | Optional: set it, store it in a password manager | Stops anyone from changing boot settings |
+| `SATA` | SATA/NVMe Operation | **AHCI/NVMe** | In RAID On, Windows Setup shows no drives |
+| `USB Boot` | Enable USB Boot Support | **On** | Lets the laptop start from the stick |
+| `Secure Boot` | Enable Secure Boot | **On** | Blocks unsigned bootloaders and bootkits |
+| `Charge` | Primary Battery Charge Configuration | **Primarily AC Use** | The battery is at 16% health and stays plugged in |
+| `Wake on AC` | Wake on AC / AC Behavior | **On** | Boots back up after a power cut |
+| `Boot Sequence` | Boot Sequence | USB stick **first** | After the AHCI switch, Windows can't start, so the Windows route above won't work again |
+| `Admin Password` | Admin (setup) password | Optional: set it, store it in a password manager | Stops anyone from changing boot settings |
 
-Apply, exit.
+4. **Apply Changes**, then **Exit**. The laptop starts from the stick.
 
 > Switching to AHCI on an **existing** Windows install makes it fail to boot. That doesn't matter here, because we wipe the drive in the next step.
 
 ## 8. Clean install
 
-1. Restart, tap **F12** → select the **UEFI** USB entry.
+1. If the laptop doesn't start from the stick by itself: hold the power button until it turns off, turn it on, tap **F12** and select the **UEFI** USB entry.
 2. Language/keyboard → **Install now**.
-3. Product key → **I don't have a product key**.
-4. Edition: with the Pro key in firmware, Setup normally skips this screen. If it asks, choose **Windows 11 Pro**. ⚠️ Choosing Home installs and activates as Home.
-5. **Custom install**. Delete **every partition** on the ~238 GB drive (Disk 0) until it shows only *Unallocated Space*. If the SSD is installed it appears as another disk (~465 GB). **Don't touch it.**
-6. Select the unallocated space → Next.
-7. **Setup screens (OOBE):** region, keyboard, network. Keep Ethernet unplugged and skip Wi-Fi. The local-account options below work best offline.
-8. **Local account:** when it asks for a Microsoft account, try these in order:
-   1. **Sign-in options → Domain join instead** (if shown), then enter a local admin username.
-   2. Press **Shift + F10** to open a command prompt, then run `start ms-cxh:localonly`. A local-account dialog opens.
-   3. If neither works on this Windows build, **stop**: log it as a roadblock. We'll build an `autounattend.xml` that creates the local account.
+3. Product key and edition: with the Pro key in firmware, Setup skips both screens. If it asks, choose **I don't have a product key** and then **Windows 11 Pro**. ⚠️ Choosing Home installs and activates as Home.
+4. **Custom install.** Identify the disks **by size, not by number**. Windows may list the SSD as Disk 0:
+   - the old NVMe: about **238 GB**, with 3–4 partitions (System, MSR, Primary, Recovery). Delete **every partition** until it shows one line, *Unallocated Space*.
+   - the SSD: about **465–477 GB**, unallocated. **Don't touch it.**
+   - the USB stick: a 200 MB partition plus `WIN11`. **Don't touch it.**
+5. Select the NVMe's unallocated space → Next. Leave the stick in during the restarts and don't press any key.
+6. **Setup screens (OOBE):** region, keyboard. On build 26300 the network screen won't continue without internet, so don't connect. Go straight to the next step from that screen.
+7. **Local account:** press **Shift + F10** to open a command prompt, then run `start ms-cxh:localonly`. A local-account dialog opens (this worked on build 26300). If it doesn't:
+   1. Run `reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\OOBE /v BypassNRO /t REG_DWORD /d 1 /f`, then `shutdown /r /t 0`. After the restart, the network screen shows **I don't have internet**.
+   2. If that fails too, **stop** and log it as a roadblock. We'll build an `autounattend.xml` that creates the local account. Don't sign in with a Microsoft account to get past the screen.
 
    Use a **strong password** and save it in a password manager.
-9. Privacy screens: choose **No** for everything optional.
+8. Privacy screens: choose **No** for everything optional.
+9. At the desktop, **remove the USB stick**. The boot order still puts it first.
 
 ## 9. Post-install
 
-1. **Activation:** Settings → System → Activation should show *Active, digital license*. If not, the fallback is to add your wife's Microsoft account (next step) and run the **Troubleshoot** button on that page while signed in as her.
+1. **Activation:** connect to the internet first (Wi-Fi is fine for now; activation fails offline with "can't connect"). Settings → System → Activation should show *Windows 11 Pro* and *Active* within a few minutes, or run `slmgr /ato` in an admin PowerShell. Don't paste the product key or product ID anywhere public. If it doesn't activate, the fallback is to add your wife's Microsoft account (next step) and run the **Troubleshoot** button on that page while signed in as her.
 2. **Windows Update:** run it repeatedly until nothing is left, including optional driver updates.
 3. **Drivers:** install **Dell Command | Update** from Dell's site and apply everything. This brings in the Intel graphics driver, which Quick Sync needs in Phase 2.
 4. **Hostname:** in an admin PowerShell, run `Rename-Computer -NewName homeserver -Restart`.
