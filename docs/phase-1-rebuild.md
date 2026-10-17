@@ -192,7 +192,14 @@ Take photos of each step for `docs/img/`. Make sure no stickers with the service
 ## 9. Post-install
 
 1. **Activation:** connect to the internet first (Wi-Fi is fine for now; activation fails offline with "can't connect"). Settings → System → Activation should show *Windows 11 Pro* and *Active* within a few minutes, or run `slmgr /ato` in an admin PowerShell. Don't paste the product key or product ID anywhere public. If it doesn't activate, the fallback is to add your wife's Microsoft account (next step) and run the **Troubleshoot** button on that page while signed in as her.
-2. **Windows Update:** run it repeatedly until nothing is left, including optional driver updates.
+2. **Windows Update:** run it repeatedly until nothing is left, including optional driver updates (Settings → Windows Update → Advanced options → Optional updates).
+   If it sits on *Checking for updates* for more than about 15 minutes, reset its download cache in an admin PowerShell. This only deletes downloaded update files, which Windows fetches again:
+   ```powershell
+   Stop-Service wuauserv, bits -Force
+   Remove-Item C:\Windows\SoftwareDistribution\Download\* -Recurse -Force
+   Start-Service wuauserv, bits
+   ```
+   Then press **Check for updates** again.
 3. **Drivers:** install **Dell Command | Update** from Dell's site and apply everything. This brings in the Intel graphics driver, which Quick Sync needs in Phase 2.
 4. **Hostname:** in an admin PowerShell, run `Rename-Computer -NewName homeserver -Restart`.
 5. **Your wife's account:** Settings → Accounts → Other users → Add account → her Microsoft account. Leave it as a **Standard user**.

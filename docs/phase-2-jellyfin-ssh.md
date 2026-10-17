@@ -2,6 +2,11 @@
 
 This becomes a full runbook once Phase 1 is done. The decisions below are already made.
 
+## BIOS
+Open it from Windows (Settings → System → Recovery → Advanced startup → UEFI Firmware Settings) and use the search box:
+- `SupportAssist`: turn off **SupportAssist OS Recovery** and set **Auto OS Recovery Threshold** to **Off**. Otherwise a failed boot can stop at Dell's recovery screen, waiting for a network download, instead of retrying Windows.
+- `Boot Sequence`: **Windows Boot Manager** first. Delete the leftover USB installer entry.
+
 ## Network
 - Move the server to Ethernet. Add DHCP reservations on the router for **both** the Ethernet and the Wi-Fi adapter, since the laptop sometimes moves around the house.
 - Set the Windows network profile to **Private**.
