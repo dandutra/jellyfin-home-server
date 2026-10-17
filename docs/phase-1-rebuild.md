@@ -213,21 +213,28 @@ Take photos of each step for `docs/img/`. Make sure no stickers with the service
       ```
    3. Check progress: `Get-BitLockerVolume C: | Format-List VolumeStatus, EncryptionPercentage`. It's done at *FullyDecrypted* and *0*.
 6. **Your wife's account:** Settings → Accounts → Other users → Add account → her Microsoft account. Leave it as a **Standard user**.
-7. **SSD, if installed:** Disk Management → initialize as **GPT** → New Simple Volume → **NTFS**, letter **D:**, label `Media`.
-8. **Restore files:** turn File Sharing back on on the Mac, open `\\<mac-ip>\laptop-backup` from each account, copy the scanned files back, then turn File Sharing off and delete the backup from the Mac:
-   ```bash
-   chflags -R nouchg ~/laptop-backup   # macOS may have locked folders that were Read-only on Windows
-   rm -rf ~/laptop-backup
-   ```
+7. **SSD, if installed:** Disk Management → initialize as **GPT** → New Simple Volume → **NTFS**, letter **D:**, label `Media`. Keep **Quick format** on (a full format only wears a new SSD) and **compression off** (video is already compressed, and decompressing costs CPU that transcoding needs).
+8. **Restore files:**
+   1. On the Mac, turn **File Sharing** back on and get the IP with `ipconfig getifaddr en0`.
+   2. On the laptop, in File Explorer's address bar, open `\\<mac-ip>\laptop-backup` and sign in with the **Mac** username and password. Leave "Remember my credentials" unticked.
+   3. `laptop-backup-YYYY-MM` has one folder per old account plus `robocopy-*.log` files (ignore those). Go through each folder and decide what to keep. Old Downloads folders are mostly things you don't need.
+   4. **Copy (Ctrl+C), don't cut.** A cut removes the files from the Mac, which leaves the laptop holding the only copy before you've checked it.
+   5. Paste into the matching folder of the account that will use the files. For files both accounts need, use `C:\Users\Public`. Copy, don't move, between accounts on the laptop: a move on the same drive keeps the files' old permissions, so the other account may not be able to open them.
+   6. Check: right-click a folder → **Properties** and compare the file count with the same folder on the Mac.
+   7. Turn File Sharing off on the Mac. Once nothing is missing, delete the backup:
+      ```bash
+      chflags -R nouchg ~/laptop-backup   # macOS may have locked folders that were Read-only on Windows
+      rm -rf ~/laptop-backup
+      ```
 9. Run `pre-wipe-checks.ps1` again and keep the output in `local/` as a before/after record (Edition, License, Storage controllers should all show the new state).
 
 ## Phase 1 done ✅
 
-- [ ] Windows 11 Pro, activated
-- [ ] BIOS updated, AHCI, Secure Boot on, charge limit set
-- [ ] All updates and Dell drivers installed
-- [ ] Local admin account + wife's standard account
-- [ ] Hostname `homeserver`
-- [ ] C: decrypted, device encryption off
-- [ ] SSD installed as `D:` (or cable ordered and noted in the journal)
-- [ ] Journal updated; roadblocks written up
+- [x] Windows 11 Pro, activated
+- [x] BIOS updated, AHCI, Secure Boot on, charge limit set
+- [x] All updates and Dell drivers installed
+- [x] Local admin account + wife's standard account
+- [x] Hostname `homeserver`
+- [x] C: decrypted, device encryption off
+- [x] SSD installed as `D:` (or cable ordered and noted in the journal)
+- [x] Journal updated; roadblocks written up

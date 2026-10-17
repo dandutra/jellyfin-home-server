@@ -67,3 +67,12 @@ A dated log of the build. Short entries; anything that took real effort to solve
 - Windows turned on BitLocker device encryption by itself: C: is encrypted, but protection is off and there's no recovery key yet. I first picked TPM-only protection, then changed my mind once I understood it only guards against someone taking the laptop or the drive. The server stays in the apartment, so I'm decrypting C: instead. See [ADR 009](docs/decisions/009-no-bitlocker.md).
 - The SSD reports as 512 GB (T-FORCE), not 500.
 - **Antivirus:** Defender only on the server, no Kaspersky. See [ADR 008](docs/decisions/008-defender-only.md).
+
+## 2026-10-17: Post-install, Phase 1 done
+
+- Windows Update, then Dell Command | Update. Renamed the laptop to `homeserver`.
+- Turned off device encryption and decrypted C: (ADR 009). It finished at *FullyDecrypted*, 0%.
+- Formatted the SSD as GPT + NTFS, `D:` `Media`, quick format, no compression.
+- **Restore:** I used Cut instead of Copy on the share for one account's files, which removed them from the Mac before I had checked them on the laptop. Nothing was lost, but the runbook now says to copy. We went through the backup together and kept only what we needed. Most of it was old downloads.
+- `pre-wipe-checks.ps1` after the install: Windows 11 Pro, Licensed (firmware OEM key), AHCI controller, both drives visible. Before the install, the controller was in RAID mode (Intel RST).
+- There's an empty profile named `WsiAccount` that I didn't create. To look at in Phase 2.
