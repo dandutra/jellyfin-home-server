@@ -202,19 +202,16 @@ Take photos of each step for `docs/img/`. Make sure no stickers with the service
    Then press **Check for updates** again.
 3. **Drivers:** install **Dell Command | Update** from Dell's site and apply everything. This brings in the Intel graphics driver, which Quick Sync needs in Phase 2.
 4. **Hostname:** in an admin PowerShell, run `Rename-Computer -NewName homeserver -Restart`.
-5. **BitLocker** ([ADR 009](decisions/009-bitlocker-tpm-only.md)), after Dell Command | Update so its BIOS updates don't trigger a recovery prompt. In an admin PowerShell:
-   1. Create the recovery key. ⚠️ This prints the key. Don't save this output to `local/` or paste it anywhere:
+5. **Turn off device encryption** ([ADR 009](decisions/009-no-bitlocker.md)), before setting up the SSD so Windows doesn't encrypt D: too. In an admin PowerShell:
+   1. Stop Windows from turning it back on by itself:
       ```powershell
-      Add-BitLockerKeyProtector -MountPoint C: -RecoveryPasswordProtector
-      (Get-BitLockerVolume C:).KeyProtector | Where-Object KeyProtectorType -eq RecoveryPassword
+      reg add HKLM\SYSTEM\CurrentControlSet\Control\BitLocker /v PreventDeviceEncryption /t REG_DWORD /d 1 /f
       ```
-   2. Save the 48-digit **RecoveryPassword** and its **KeyProtectorId** in the password manager. Check it digit by digit.
-   3. Add the TPM protector and turn protection on:
+   2. Decrypt C:. This runs in the background and can take an hour. The laptop stays usable, but keep it on AC and don't shut it down:
       ```powershell
-      Add-BitLockerKeyProtector -MountPoint C: -TpmProtector
-      Resume-BitLocker -MountPoint C:
+      Disable-BitLocker -MountPoint C:
       ```
-   4. Check: `Get-BitLockerVolume C: | Format-List VolumeStatus, ProtectionStatus` should show *FullyEncrypted* and *On*. Restart once and confirm Windows starts without asking for the key.
+   3. Check progress: `Get-BitLockerVolume C: | Format-List VolumeStatus, EncryptionPercentage`. It's done at *FullyDecrypted* and *0*.
 6. **Your wife's account:** Settings → Accounts → Other users → Add account → her Microsoft account. Leave it as a **Standard user**.
 7. **SSD, if installed:** Disk Management → initialize as **GPT** → New Simple Volume → **NTFS**, letter **D:**, label `Media`.
 8. **Restore files:** turn File Sharing back on on the Mac, open `\\<mac-ip>\laptop-backup` from each account, copy the scanned files back, then turn File Sharing off and delete the backup from the Mac:
@@ -231,6 +228,6 @@ Take photos of each step for `docs/img/`. Make sure no stickers with the service
 - [ ] All updates and Dell drivers installed
 - [ ] Local admin account + wife's standard account
 - [ ] Hostname `homeserver`
-- [ ] BitLocker on C: (TPM), recovery key in the password manager
+- [ ] C: decrypted, device encryption off
 - [ ] SSD installed as `D:` (or cable ordered and noted in the journal)
 - [ ] Journal updated; roadblocks written up

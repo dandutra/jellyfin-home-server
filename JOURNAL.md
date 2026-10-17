@@ -64,6 +64,6 @@ A dated log of the build. Short entries; anything that took real effort to solve
 - **Cause:** Windows Setup had put the boot files on the USB stick's EFI partition, which macOS creates when it formats a stick as GPT. It booted fine only while the stick was in. See [roadblock 003](docs/roadblocks/003-boot-files-on-the-usb-stick.md).
   - Fixed from the running Windows: shrank C: by 300 MB, created an EFI partition on the NVMe and ran `bcdboot`. The laptop now boots with no stick.
   - `build-usb.sh` now formats the stick as MBR, so there is no EFI partition for Setup to reuse.
-- Windows turned on BitLocker device encryption by itself: C: is encrypted, but protection is off and there's no recovery key yet. Decided: protection on with the TPM only, recovery key saved first. See [ADR 009](docs/decisions/009-bitlocker-tpm-only.md).
+- Windows turned on BitLocker device encryption by itself: C: is encrypted, but protection is off and there's no recovery key yet. I first picked TPM-only protection, then changed my mind once I understood it only guards against someone taking the laptop or the drive. The server stays in the apartment, so I'm decrypting C: instead. See [ADR 009](docs/decisions/009-no-bitlocker.md).
 - The SSD reports as 512 GB (T-FORCE), not 500.
 - **Antivirus:** Defender only on the server, no Kaspersky. See [ADR 008](docs/decisions/008-defender-only.md).
