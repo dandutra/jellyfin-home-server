@@ -3,7 +3,7 @@
 This becomes a full runbook once Phase 1 is done. The decisions below are already made.
 
 ## BIOS
-Open it from Windows (Settings → System → Recovery → Advanced startup → UEFI Firmware Settings) and use the search box:
+First run `Suspend-BitLocker -MountPoint C: -RebootCount 1` in an admin PowerShell. Without it, the changes below make Windows ask for the recovery key at the next boot ([ADR 009](decisions/009-bitlocker-tpm-only.md)). Then open the BIOS from Windows (Settings → System → Recovery → Advanced startup → UEFI Firmware Settings) and use the search box:
 - `SupportAssist`: turn off **SupportAssist OS Recovery** and set **Auto OS Recovery Threshold** to **Off**. Otherwise a failed boot can stop at Dell's recovery screen, waiting for a network download, instead of retrying Windows.
 - `Boot Sequence`: **Windows Boot Manager** first. Delete the leftover USB installer entry.
 

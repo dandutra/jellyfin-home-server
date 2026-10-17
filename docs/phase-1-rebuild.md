@@ -202,14 +202,27 @@ Take photos of each step for `docs/img/`. Make sure no stickers with the service
    Then press **Check for updates** again.
 3. **Drivers:** install **Dell Command | Update** from Dell's site and apply everything. This brings in the Intel graphics driver, which Quick Sync needs in Phase 2.
 4. **Hostname:** in an admin PowerShell, run `Rename-Computer -NewName homeserver -Restart`.
-5. **Your wife's account:** Settings → Accounts → Other users → Add account → her Microsoft account. Leave it as a **Standard user**.
-6. **SSD, if installed:** Disk Management → initialize as **GPT** → New Simple Volume → **NTFS**, letter **D:**, label `Media`.
-7. **Restore files:** turn File Sharing back on on the Mac, open `\\<mac-ip>\laptop-backup` from each account, copy the scanned files back, then turn File Sharing off and delete the backup from the Mac:
+5. **BitLocker** ([ADR 009](decisions/009-bitlocker-tpm-only.md)), after Dell Command | Update so its BIOS updates don't trigger a recovery prompt. In an admin PowerShell:
+   1. Create the recovery key. ⚠️ This prints the key. Don't save this output to `local/` or paste it anywhere:
+      ```powershell
+      Add-BitLockerKeyProtector -MountPoint C: -RecoveryPasswordProtector
+      (Get-BitLockerVolume C:).KeyProtector | Where-Object KeyProtectorType -eq RecoveryPassword
+      ```
+   2. Save the 48-digit **RecoveryPassword** and its **KeyProtectorId** in the password manager. Check it digit by digit.
+   3. Add the TPM protector and turn protection on:
+      ```powershell
+      Add-BitLockerKeyProtector -MountPoint C: -TpmProtector
+      Resume-BitLocker -MountPoint C:
+      ```
+   4. Check: `Get-BitLockerVolume C: | Format-List VolumeStatus, ProtectionStatus` should show *FullyEncrypted* and *On*. Restart once and confirm Windows starts without asking for the key.
+6. **Your wife's account:** Settings → Accounts → Other users → Add account → her Microsoft account. Leave it as a **Standard user**.
+7. **SSD, if installed:** Disk Management → initialize as **GPT** → New Simple Volume → **NTFS**, letter **D:**, label `Media`.
+8. **Restore files:** turn File Sharing back on on the Mac, open `\\<mac-ip>\laptop-backup` from each account, copy the scanned files back, then turn File Sharing off and delete the backup from the Mac:
    ```bash
    chflags -R nouchg ~/laptop-backup   # macOS may have locked folders that were Read-only on Windows
    rm -rf ~/laptop-backup
    ```
-8. Run `pre-wipe-checks.ps1` again and keep the output in `local/` as a before/after record (Edition, License, Storage controllers should all show the new state).
+9. Run `pre-wipe-checks.ps1` again and keep the output in `local/` as a before/after record (Edition, License, Storage controllers should all show the new state).
 
 ## Phase 1 done ✅
 
@@ -218,5 +231,6 @@ Take photos of each step for `docs/img/`. Make sure no stickers with the service
 - [ ] All updates and Dell drivers installed
 - [ ] Local admin account + wife's standard account
 - [ ] Hostname `homeserver`
+- [ ] BitLocker on C: (TPM), recovery key in the password manager
 - [ ] SSD installed as `D:` (or cable ordered and noted in the journal)
 - [ ] Journal updated; roadblocks written up
