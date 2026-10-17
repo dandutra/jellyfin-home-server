@@ -11,3 +11,4 @@ Short records of why the server is built the way it is. Format: Context → Deci
 | [005](005-ssh-lan-only-no-rdp.md) | SSH is key-only and LAN-only; no RDP |
 | [006](006-service-accounts.md) | Each service runs under its own low-privilege account |
 | [007](007-config-and-media-layout.md) | Configs on C:, all media in one tree on D: |
+| [008](008-defender-only.md) | Microsoft Defender is the only antivirus on the server |

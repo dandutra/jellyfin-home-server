@@ -117,7 +117,7 @@ caffeinate -i ./scripts/mac/scan-backup.sh "/Volumes/<DriveName>"
    The script:
    - refuses internal disks and anything bigger than 64 GB
    - makes you type the disk id to confirm
-   - formats the stick FAT32 + GPT
+   - formats the stick FAT32 + MBR (GPT would add an EFI partition that Windows Setup reuses, see [roadblock 003](roadblocks/003-boot-files-on-the-usb-stick.md))
    - copies the installer
    - splits `install.wim` with wimlib
    - copies the BIOS `.exe` onto the stick, if given
@@ -187,7 +187,7 @@ Take photos of each step for `docs/img/`. Make sure no stickers with the service
 
    Use a **strong password** and save it in a password manager.
 8. Privacy screens: choose **No** for everything optional.
-9. At the desktop, **remove the USB stick**. The boot order still puts it first.
+9. At the desktop, **shut down, remove the USB stick and start again**. Windows must boot with the stick out. If it doesn't, the boot files are on the stick: see [roadblock 003](roadblocks/003-boot-files-on-the-usb-stick.md) for the fix.
 
 ## 9. Post-install
 

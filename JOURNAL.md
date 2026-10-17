@@ -56,3 +56,14 @@ A dated log of the build. Short entries; anything that took real effort to solve
 - **Setup listed the new SSD as Disk 0 and the old NVMe as Disk 1**, the opposite of the runbook. I went by size: deleted the four partitions on the 238 GB disk and left the 477 GB SSD and the USB stick alone.
 - **Local account:** on build 26300 the network screen has no "continue without internet" option. `Shift + F10` → `start ms-cxh:localonly` worked straight from that screen and opened the local-account dialog. No `autounattend.xml` needed.
 - Activation failed offline ("can't connect"), as expected. On Wi-Fi it activated within minutes: **Windows 11 Pro, Active**.
+
+## 2026-10-17: The install that only booted with the stick in
+
+- Windows Update stayed on "Checking for updates" for a long time. I closed the lid overnight, and the next sign-in hung. I forced a power-off.
+- After that, the laptop didn't find Windows. Dell SupportAssist ran its hardware scan (passed), wanted Ethernet to download its recovery environment, and looped. The BIOS boot list had only the network entries.
+- **Cause:** Windows Setup had put the boot files on the USB stick's EFI partition, which macOS creates when it formats a stick as GPT. It booted fine only while the stick was in. See [roadblock 003](docs/roadblocks/003-boot-files-on-the-usb-stick.md).
+  - Fixed from the running Windows: shrank C: by 300 MB, created an EFI partition on the NVMe and ran `bcdboot`. The laptop now boots with no stick.
+  - `build-usb.sh` now formats the stick as MBR, so there is no EFI partition for Setup to reuse.
+- Windows turned on BitLocker device encryption by itself: C: is encrypted, but protection is off and there's no recovery key yet. To decide before Phase 2.
+- The SSD reports as 512 GB (T-FORCE), not 500.
+- **Antivirus:** Defender only on the server, no Kaspersky. See [ADR 008](docs/decisions/008-defender-only.md).

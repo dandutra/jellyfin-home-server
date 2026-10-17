@@ -40,7 +40,10 @@ diskutil list "$DISK"
 read -r -p "Type the disk id (${DISK#/dev/}) to continue: " answer
 [[ "$answer" == "${DISK#/dev/}" ]] || die "confirmation did not match, nothing changed"
 
-diskutil eraseDisk FAT32 "$VOLUME_NAME" GPT "$DISK"
+# MBR, not GPT: on GPT, diskutil adds a 200 MB EFI System Partition. Windows Setup
+# then reuses that partition on the stick for the installed system's boot files, and
+# the laptop can't boot once the stick is removed. UEFI boots a FAT32 stick on MBR fine.
+diskutil eraseDisk FAT32 "$VOLUME_NAME" MBR "$DISK"
 DST="/Volumes/$VOLUME_NAME"
 # Keep Spotlight off the stick: its indexer holds the volume open and blocks the eject.
 touch "$DST/.metadata_never_index"
