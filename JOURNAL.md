@@ -149,3 +149,11 @@ A dated log of the build. Short entries; anything that took real effort to solve
 
 - Uninstalled NordVPN and NordUpdater at the laptop and restarted. No Nord services, adapters, drivers, uninstall entries or program folders are left.
 - A minute after the restart, with nobody signed in, the server had 4.2 GB of RAM free. Before, it had 2.0 GB, but someone was signed in then too, so the two numbers don't compare exactly.
+
+## 2026-10-19: Phase 3 step 2, WireGuard tunnel
+
+- WireGuard for Windows 1.1.1 installed at the laptop. Nord's manual-setup page gave a WireGuard config for a Toronto server: one peer, `AllowedIPs = 0.0.0.0/0`, plus DNS and keepalive lines.
+- `setup-vpn-tunnel.ps1` worked first time: `WireGuardTunnel$nord-wg` is running and set to Auto, the handshake came after 1 second, and Nord's IP check says `protected: True`.
+- The routing table now has `0.0.0.0/1` and `128.0.0.0/1` on `nord-wg` (metric 5). The default route stays on Ethernet (metric 25) but loses to the two more specific routes. SSH and Jellyfin's health check still answer from the Mac.
+- Only SYSTEM and Administrators can read `C:\ProgramData\homeserver\vpn`. I deleted the downloaded copy of the config.
+- Not tested yet: the tunnel connecting at boot with nobody signed in. Step 11 covers it.
