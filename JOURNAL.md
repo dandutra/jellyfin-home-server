@@ -111,3 +111,10 @@ A dated log of the build. Short entries; anything that took real effort to solve
 - Before the dashboard test, I ran Jellyfin's ffmpeg over SSH: 4K HEVC 10-bit to 720p H.264 on Quick Sync, at 119 fps (2× real-time).
 - **The dashboard test worked under `NT SERVICE\JellyfinServer`:** D3D11VA decode, `vpp_qsv` scaling and `h264_qsv` encode, 150 fps (2.4× real-time), `FFmpeg exited with code 0`. The virtual account needed no extra rights for the GPU, which had been the expected trouble spot.
 - The CPU check from the runbook didn't work: the clip was fully converted in 12 seconds, before I looked. The ffmpeg log's `fps` and `speed` are the measure now.
+
+## 2026-10-19: TVs, and a Fire TV that wouldn't start one file
+
+- LG (Jellyfin for webOS 1.2.2): both test files played. There was no transcode log for the 4K clip, so it played directly, as [ADR 004](docs/decisions/004-4k-direct-play-only.md) plans.
+- Fire TV (Jellyfin Android TV 0.19.10): the 4K clip was converted to 1080p with Quick Sync. *Big Buck Bunny* never started. The app retried direct play about three times a second for over ten minutes and never asked the server for a transcode.
+- I narrowed it down with 2-minute ffmpeg copies, changing one thing per copy. Every rewritten copy played: MP4 with 5.1, MP4 with stereo, and MOV without the timecode track. After the MOV copy, I blamed the timecode track. Then the full-length MP4 kept that track and still played, so that conclusion was wrong. The cause is something in the original 2008 file's packaging. I had already deleted the original, so I can't say what exactly. See [roadblock 005](docs/roadblocks/005-fire-tv-retry-loop-on-old-mov.md).
+- Fix: repackaged Big Buck Bunny as `Big Buck Bunny (2008).mp4` with `-c copy`, so nothing was re-encoded. Step 6 now does this straight after the download.

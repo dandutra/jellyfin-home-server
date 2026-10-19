@@ -147,6 +147,12 @@ To check it worked, the script prints the AC sleep timeout and the lid action, b
      Expand-Archive "$bbb\bbb.zip" -DestinationPath $bbb
      Remove-Item "$bbb\bbb.zip"
      ```
+     Then repackage it as MP4. The Fire TV app can't play the original 2008 `.mov` as it is and retries it forever ([roadblock 005](roadblocks/005-fire-tv-retry-loop-on-old-mov.md)). Nothing is re-encoded. Step 7 installs the ffmpeg used here, so do this after step 7 if you follow the steps in order:
+     ```powershell
+     & 'C:\Program Files\Jellyfin\Server\ffmpeg.exe' -i "$bbb\big_buck_bunny_1080p_h264.mov" `
+         -map 0:v:0 -map 0:a:0 -c copy -movflags +faststart "$bbb\Big Buck Bunny (2008).mp4"
+     Remove-Item "$bbb\big_buck_bunny_1080p_h264.mov"
+     ```
    - `Test Jellyfin 4K HEVC 10bit 40M.mp4` (141 MB) from Jellyfin's own test set at <https://repo.jellyfin.org/test-videos/> (CC BY-SA 4.0). It tests direct play on the LG and Quick Sync on everything else. It's the lowest bitrate of the 4K 10-bit clips, which is enough for both tests. Check it against the published SHA-256:
      ```powershell
      $hevc = 'D:\data\media\movies\Jellyfin test 4K HEVC'
@@ -249,7 +255,9 @@ When a TV can't play a file as it is, Jellyfin converts it on the fly (*transcod
 
 1. **Dashboard → Users**: one account per person. Not administrators, and **Allow media deletion** off.
 2. **LG 43UT7000:** install *Jellyfin* from the LG Content Store. Server address `http://<server-ip>:8096`. Play the 4K test clip: it should **direct play**, with no transcode in Dashboard → Activity ([ADR 004](decisions/004-4k-direct-play-only.md)).
-3. **Fire TV Stick:** install *Jellyfin* from the Amazon Appstore. Same server address. Play both test files. The 4K clip should transcode to 1080p with Quick Sync.
+3. **Fire TV Stick:** install *Jellyfin* from the Amazon Appstore. Same server address. Play both test files. The 4K clip should transcode to 1080p with Quick Sync. Big Buck Bunny should play as it is.
+
+> If a file never starts on the Fire TV, look at the server log for a fast `started playback` / `stopped playback ... at "0"ms` loop from "Jellyfin Android TV". The app keeps retrying direct play and never asks for a transcode. Force-stop the app (Settings → Applications → Manage Installed Applications → Jellyfin), then repackage the file with ffmpeg `-c copy`. See [roadblock 005](roadblocks/005-fire-tv-retry-loop-on-old-mov.md).
 
 ## 12. Nightly config backup
 
@@ -293,7 +301,7 @@ The configs (users, libraries, watch history) are small and take time to recreat
 - [x] No sleep on AC, lid does nothing, updates restart at 04:00
 - [x] Jellyfin running as `NT SERVICE\JellyfinServer`, read-only on media
 - [x] Quick Sync transcoding works
-- [ ] LG direct plays 4K; Fire TV plays with transcoding
+- [x] LG direct plays 4K; Fire TV plays with transcoding
 - [ ] Nightly config backup lands on the Mac
 - [ ] Services come back after a reboot with nobody signed in
 - [ ] Journal updated; roadblocks written up
