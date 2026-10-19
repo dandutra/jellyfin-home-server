@@ -70,7 +70,8 @@ if ((${#zips[@]} > KEEP)); then
   rm -f -- "${zips[@]:0:${#zips[@]}-KEEP}"
 fi
 
-server="$(ssh -G "$HOST" | awk '/^hostname /{print $2}')"
+# -T: without it, ssh -G warns about a pseudo-terminal when stdin isn't a terminal.
+server="$(ssh -T -G "$HOST" | awk '/^hostname /{print $2}')"
 health="$(curl -fsS --max-time 10 "http://$server:8096/health")" || fail "Jellyfin on $server:8096 did not answer"
 [[ "$health" == "Healthy" ]] || fail "Jellyfin health: $health"
 log "Jellyfin: $health"

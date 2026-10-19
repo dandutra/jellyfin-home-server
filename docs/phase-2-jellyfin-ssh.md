@@ -284,6 +284,12 @@ The configs (users, libraries, watch history) are small and take time to recreat
    ./scripts/mac/pull-config-backup.sh --install
    ```
    launchd runs it daily at 03:50, or when the Mac wakes up if it was asleep at that time. The log is in `~/Library/Logs/homeserver-backup.log`.
+5. Test the launchd job itself. A run from Terminal doesn't prove that launchd can reach the server, because macOS 15 can block background jobs from the home network. Move the pulled zip aside, then:
+   ```bash
+   launchctl kickstart "gui/$(id -u)/com.homeserver.config-pull"
+   tail -3 ~/Library/Logs/homeserver-backup.log
+   ```
+   The log should say `pulled ...` and `Jellyfin: Healthy`. To remove the job later: `launchctl bootout "gui/$(id -u)/com.homeserver.config-pull"`, then delete `~/Library/LaunchAgents/com.homeserver.config-pull.plist`.
 
 ## 13. Reboot test
 
@@ -302,6 +308,6 @@ The configs (users, libraries, watch history) are small and take time to recreat
 - [x] Jellyfin running as `NT SERVICE\JellyfinServer`, read-only on media
 - [x] Quick Sync transcoding works
 - [x] LG direct plays 4K; Fire TV plays with transcoding
-- [ ] Nightly config backup lands on the Mac
+- [x] Nightly config backup lands on the Mac
 - [ ] Services come back after a reboot with nobody signed in
 - [ ] Journal updated; roadblocks written up

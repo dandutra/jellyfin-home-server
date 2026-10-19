@@ -118,3 +118,11 @@ A dated log of the build. Short entries; anything that took real effort to solve
 - Fire TV (Jellyfin Android TV 0.19.10): the 4K clip was converted to 1080p with Quick Sync. *Big Buck Bunny* never started. The app retried direct play about three times a second for over ten minutes and never asked the server for a transcode.
 - I narrowed it down with 2-minute ffmpeg copies, changing one thing per copy. Every rewritten copy played: MP4 with 5.1, MP4 with stereo, and MOV without the timecode track. After the MOV copy, I blamed the timecode track. Then the full-length MP4 kept that track and still played, so that conclusion was wrong. The cause is something in the original 2008 file's packaging. I had already deleted the original, so I can't say what exactly. See [roadblock 005](docs/roadblocks/005-fire-tv-retry-loop-on-old-mov.md).
 - Fix: repackaged Big Buck Bunny as `Big Buck Bunny (2008).mp4` with `-c copy`, so nothing was re-encoded. Step 6 now does this straight after the download.
+
+## 2026-10-19: Nightly config backup
+
+- `backup-jellyfin-config.ps1 -Register` worked first time. The task runs as SYSTEM, so the problem from roadblock 004 (the script naming the current user) doesn't apply here.
+- A test run with `Start-ScheduledTask` took about 12 seconds, including the Jellyfin stop and start. The zip is 3.9 MB and holds `config`, `data`, `metadata`, `plugins` and `root`, with no cache or logs. Only SYSTEM and Administrators can read the backup folder.
+- My first check showed no zip, but the zip was there. PowerShell's formatter had dropped part of the output because one command returned objects of several types. Running the checks one at a time showed it.
+- The Mac pulled the zip by hand, then again from launchd with `launchctl kickstart`. macOS 15 didn't block the background job from reaching the home network. The 03:30 and 03:50 runs haven't happened yet, so the log is worth a look tomorrow.
+- Each run logged "Pseudo-terminal will not be allocated". It came from `ssh -G`, which only prints the config, when stdin isn't a terminal. The script now passes `-T` there.
