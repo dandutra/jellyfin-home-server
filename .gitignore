@@ -1,7 +1,7 @@
 # Raw command output, scan logs, anything with service tags, IPs or file names
 local/
 
-# Never commit these
+# Never commit these (*.conf: WireGuard configs hold a private key)
 *.iso
 *.wim
 *.swm
@@ -10,3 +10,4 @@ id_*
 *.pem
 
 .DS_Store
+*.conf

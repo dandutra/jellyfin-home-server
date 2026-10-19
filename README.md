@@ -10,7 +10,7 @@ This repo holds the runbooks, scripts, decision records and a log of what went w
 |---|---|---|
 | 1. Clean rebuild | Backup, malware scan, BIOS update, hardware upgrade, clean Windows 11 Pro install | ✅ Done, [runbook](docs/phase-1-rebuild.md) |
 | 2. SSH + Jellyfin | OpenSSH (key-only, LAN-only), power/update policy, Jellyfin as a low-privilege service, Quick Sync transcoding, config backups | ✅ Done, [runbook](docs/phase-2-jellyfin-ssh.md) |
-| 3. Automation | qBittorrent, Sonarr, Radarr, Prowlarr as native services with hardlinked media | ⚪ Planned next |
+| 3. Automation | qBittorrent behind a NordVPN kill switch, Prowlarr, Radarr, Sonarr, Bazarr as native services with hardlinked media | 🟡 In progress, [runbook](docs/phase-3-arr-stack.md) |
 
 ## Architecture
 
@@ -54,18 +54,19 @@ Nothing is exposed to the internet. Remote viewing is out of scope.
 docs/
   phase-1-rebuild.md        step-by-step runbook
   phase-2-jellyfin-ssh.md   step-by-step runbook
+  phase-3-arr-stack.md      step-by-step runbook
   decisions/                why things are the way they are (short ADRs)
   roadblocks/               problems hit: Problem → Tried → Cause → Fix → Learned
   img/                      teardown photos and screenshots
 scripts/
   mac/                      run on the admin Mac (build the USB stick, scan the backup, pull config backups)
-  windows/                  run on the server (pre-wipe checks, backup, SSH, Jellyfin service)
+  windows/                  run on the server (pre-wipe checks, backup, SSH, Jellyfin, VPN tunnel, Phase 3 services)
 JOURNAL.md                  dated log of the whole build
 ```
 
 ## Content
 
-The server is used with content I have the rights to: my own rips, public-domain and Creative Commons films. Screenshots in this repo only show public-domain titles.
+The server is used with content I have the rights to: my own rips, public-domain and Creative Commons films. The only search source configured is Internet Archive. This repo names no other sources and no titles, and screenshots of the apps either show public-domain titles only or have the titles cropped out.
 
 ## License
 

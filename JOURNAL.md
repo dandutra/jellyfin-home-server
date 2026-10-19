@@ -133,3 +133,14 @@ A dated log of the build. Short entries; anything that took real effort to solve
 - Nobody signed in at the laptop: no `explorer.exe` was running. `sshd` and `JellyfinServer` were both Running, and Jellyfin still ran as `NT SERVICE\JellyfinServer`.
 - Big Buck Bunny played on the Fire TV two minutes after the restart. The log shows one start and no retry loop.
 - Phase 2 is done. Two Phase 2 jobs haven't run on schedule yet, the 03:30 backup and the 03:50 pull. Phase 3 (qBittorrent, Sonarr, Radarr, Prowlarr) gets its own planning session first.
+
+## 2026-10-19: Phase 3 planned
+
+- The first scheduled backup runs tonight (03:30 on the server, 03:50 on the Mac). The log had only the manual test this afternoon.
+- Planned Phase 3 in a question-and-answer session. The app list grew by Bazarr, for English and Brazilian Portuguese subtitles from a free OpenSubtitles.com account.
+- qBittorrent goes through NordVPN, which I already pay for. I asked about Gluetun, the container most guides use as a VPN kill switch. It needs Docker, which [ADR 002](docs/decisions/002-native-windows-no-docker.md) rules out, and Docker Desktop only starts after someone signs in. The native version is a WireGuard tunnel service plus two layers that each stop leaks on their own: qBittorrent bound to the tunnel's adapter, and a firewall rule blocking it on Ethernet and Wi-Fi ([ADR 010](docs/decisions/010-vpn-kill-switch-native.md)).
+- Nord only offers incoming ports with a paid add-on, so there's no port forward. Downloads come only from peers that accept connections.
+- qBittorrent has no Windows service mode, so it runs under NSSM, from its own copy, not Jellyfin's ([ADR 011](docs/decisions/011-qbittorrent-under-nssm.md)).
+- Every app gets its own virtual account. I went for Modify on all of `D:\data\media` for the apps that write there instead of per-folder rights: hardlinked files share one set of permissions anyway. Prowlarr gets nothing on `D:` ([ADR 006](docs/decisions/006-service-accounts.md), updated).
+- Found while checking the server: the NordVPN Windows app was installed today, with three services using about 650 MB of RAM. The server had 2 GB free of 8 with Jellyfin idle. The runbook removes the app first.
+- Written: [Phase 3 runbook](docs/phase-3-arr-stack.md), `setup-vpn-tunnel.ps1`, `setup-arr-services.ps1`, `backup-arr-config.ps1`, and the Mac pull script now also pulls the Phase 3 zip and logs the VPN status. Nothing installed yet.
