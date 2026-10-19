@@ -144,3 +144,8 @@ A dated log of the build. Short entries; anything that took real effort to solve
 - Every app gets its own virtual account. I went for Modify on all of `D:\data\media` for the apps that write there instead of per-folder rights: hardlinked files share one set of permissions anyway. Prowlarr gets nothing on `D:` ([ADR 006](docs/decisions/006-service-accounts.md), updated).
 - Found while checking the server: the NordVPN Windows app was installed today, with three services using about 650 MB of RAM. The server had 2 GB free of 8 with Jellyfin idle. The runbook removes the app first.
 - Written: [Phase 3 runbook](docs/phase-3-arr-stack.md), `setup-vpn-tunnel.ps1`, `setup-arr-services.ps1`, `backup-arr-config.ps1`, and the Mac pull script now also pulls the Phase 3 zip and logs the VPN status. Nothing installed yet.
+
+## 2026-10-19: Phase 3 step 1, NordVPN app removed
+
+- Uninstalled NordVPN and NordUpdater at the laptop and restarted. No Nord services, adapters, drivers, uninstall entries or program folders are left.
+- A minute after the restart, with nobody signed in, the server had 4.2 GB of RAM free. Before, it had 2.0 GB, but someone was signed in then too, so the two numbers don't compare exactly.
