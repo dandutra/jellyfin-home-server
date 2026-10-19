@@ -309,5 +309,5 @@ The configs (users, libraries, watch history) are small and take time to recreat
 - [x] Quick Sync transcoding works
 - [x] LG direct plays 4K; Fire TV plays with transcoding
 - [x] Nightly config backup lands on the Mac
-- [ ] Services come back after a reboot with nobody signed in
-- [ ] Journal updated; roadblocks written up
+- [x] Services come back after a reboot with nobody signed in
+- [x] Journal updated; roadblocks written up

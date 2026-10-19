@@ -126,3 +126,10 @@ A dated log of the build. Short entries; anything that took real effort to solve
 - My first check showed no zip, but the zip was there. PowerShell's formatter had dropped part of the output because one command returned objects of several types. Running the checks one at a time showed it.
 - The Mac pulled the zip by hand, then again from launchd with `launchctl kickstart`. macOS 15 didn't block the background job from reaching the home network. The 03:30 and 03:50 runs haven't happened yet, so the log is worth a look tomorrow.
 - Each run logged "Pseudo-terminal will not be allocated". It came from `ssh -G`, which only prints the config, when stdin isn't a terminal. The script now passes `-T` there.
+
+## 2026-10-19: Reboot test, Phase 2 done
+
+- `Restart-Computer -Force` over SSH. Windows was up 43 seconds later, SSH answered after about 66 seconds and Jellyfin's health page said `Healthy` after about 71.
+- Nobody signed in at the laptop: no `explorer.exe` was running. `sshd` and `JellyfinServer` were both Running, and Jellyfin still ran as `NT SERVICE\JellyfinServer`.
+- Big Buck Bunny played on the Fire TV two minutes after the restart. The log shows one start and no retry loop.
+- Phase 2 is done. Two Phase 2 jobs haven't run on schedule yet, the 03:30 backup and the 03:50 pull. Phase 3 (qBittorrent, Sonarr, Radarr, Prowlarr) gets its own planning session first.
