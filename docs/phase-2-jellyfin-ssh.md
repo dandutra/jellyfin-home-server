@@ -170,6 +170,8 @@ The installer is graphical, so this step happens at the laptop.
    - Keep **Start Service after Install** ticked.
 3. Don't open the web page yet.
 
+> On the first install, the installer said it couldn't start the service, but it had started. The first start takes over a minute (75 s here) while Jellyfin sets up its database and checks ffmpeg, and the installer most likely stops waiting before that. It keeps no log, so I couldn't confirm. To check: `Get-Service JellyfinServer` should say **Running**, and `http://localhost:8096/health` should answer `Healthy`. Later starts take a few seconds.
+
 ## 8. Jellyfin's own account and permissions (over SSH)
 
 [ADR 006](decisions/006-service-accounts.md) has the background. In short, Jellyfin runs as `NT SERVICE\JellyfinServer`, an account Windows creates for this one service. It has no password and nobody can sign in with it. It can read the media but not change or delete it.
@@ -185,7 +187,16 @@ powershell -ExecutionPolicy Bypass -File .\setup-jellyfin-service.ps1
 - gives Jellyfin write access to its own data folder
 - opens port 8096 (web and apps) and 7359 (apps finding the server by themselves) to the home network only
 
-The output should say `runs as NT SERVICE\JellyfinServer` and `Running`.
+The output should say `runs as NT SERVICE\JellyfinServer` and `Running`. `D:\data` should list exactly four entries: `NT SERVICE\JellyfinServer:(OI)(CI)(RX)`, your admin account, SYSTEM and Administrators.
+
+To check that Jellyfin works under the new account:
+```powershell
+Get-Process jellyfin -IncludeUserName | Select-Object UserName   # NT SERVICE\JellyfinServer
+(Invoke-WebRequest -UseBasicParsing http://localhost:8096/health).Content   # Healthy
+```
+From the Mac, `curl http://<server-ip>:8096/health` should also say `Healthy`, which shows the firewall rule works.
+
+> The first run failed at icacls with exit code 1332, *No mapping between account names and security IDs*. Over SSH, `$env:USERDOMAIN` is `WORKGROUP`, not the computer name. The script now names the admin account by its SID. See [roadblock 004](roadblocks/004-icacls-workgroup-over-ssh.md).
 
 > ⚠️ **Run this script again after every Jellyfin upgrade.** The installer removes and re-creates the service, which puts it back on Network Service. The permissions stay, because Windows derives the account from the service name.
 
@@ -261,7 +272,7 @@ The configs (users, libraries, watch history) are small and take time to recreat
 - [x] SSH from the Mac with a key; passwords refused
 - [x] `WsiAccount` identified and noted in the journal
 - [x] No sleep on AC, lid does nothing, updates restart at 04:00
-- [ ] Jellyfin running as `NT SERVICE\JellyfinServer`, read-only on media
+- [x] Jellyfin running as `NT SERVICE\JellyfinServer`, read-only on media
 - [ ] Quick Sync transcoding works
 - [ ] LG direct plays 4K; Fire TV plays with transcoding
 - [ ] Nightly config backup lands on the Mac

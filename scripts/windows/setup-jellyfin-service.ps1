@@ -37,7 +37,9 @@ param(
 $ErrorActionPreference = 'Stop'
 $serviceName = 'JellyfinServer'
 $account = "NT SERVICE\$serviceName"
-$admin = "$env:USERDOMAIN\$env:USERNAME"
+# By SID, not "$env:USERDOMAIN\$env:USERNAME": over SSH, USERDOMAIN is WORKGROUP
+# and icacls fails with 1332 (no mapping between account names and SIDs).
+$admin = '*' + [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
 
 function Invoke-Checked {
     $exe, $rest = $args

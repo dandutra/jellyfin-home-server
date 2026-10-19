@@ -96,3 +96,10 @@ A dated log of the build. Short entries; anything that took real effort to solve
 - `set-power-and-updates.ps1` worked first time: no sleep on AC, screen off after 5 minutes, hibernation off, updates at 04:00, active hours 05:00–23:00. The lid line in its output was blank. "Lid close action" is a hidden setting, so `powercfg /query` skips it. `powercfg /qh` shows it as *Do nothing* on AC. The script now uses `/qh`.
 - The laptop only has Modern Standby (S0). S3 sleep doesn't exist on it.
 - Test files are on D:: *Big Buck Bunny* 1080p H.264 (Blender only serves it as a zip now) and Jellyfin's `Test Jellyfin 4K HEVC 10bit 40M.mp4`. My hash check said `False` on the HEVC clip, but the file was fine: PowerShell 5.1 returned the `.sha256sum` file as bytes, so I was comparing against garbage. The hash and the size both match the published values. The runbook now decodes the bytes first.
+
+## 2026-10-19: Jellyfin installed, own account
+
+- Installed Jellyfin 12.2 at the laptop: Advanced, as a service, Network Service. The installer said the service couldn't start, but it was running. Its log ended in `Startup complete 0:01:15`, the health page said `Healthy`, and Windows had no service errors. The first start sets up the database and probes ffmpeg, and the installer most likely stopped waiting before that. Later starts take 7 seconds.
+- ffmpeg 8.1.3 ships with the `*_qsv` decoders and encoders, so Quick Sync should be available.
+- `setup-jellyfin-service.ps1` failed at icacls with exit code 1332, because over SSH `USERDOMAIN` is `WORKGROUP`. The script now uses the admin account's SID. See [roadblock 004](docs/roadblocks/004-icacls-workgroup-over-ssh.md). The three untested parts all worked: `sc config ... obj= "NT SERVICE\JellyfinServer"` with no password, icacls resolving the `NT SERVICE\` name, and `sc failureflag`.
+- Jellyfin now runs as `NT SERVICE\JellyfinServer`. It has read-only access to `D:\data` and modify rights on its data folder. Ports 8096 and 7359 are open to the home network only, and the Mac gets `Healthy` from it.

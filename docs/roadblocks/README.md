@@ -7,6 +7,7 @@ One file per problem that took real effort to get past, named `NNN-short-title.m
 | 001 | [ClamAV reported "clean" after scanning 0 files](001-clamscan-scanned-nothing.md) | 1 |
 | 002 | [Robocopy to a macOS SMB share copied 0 files](002-robocopy-to-macos-smb.md) | 1 |
 | 003 | [Windows put its boot files on the USB stick](003-boot-files-on-the-usb-stick.md) | 1 |
+| 004 | [icacls couldn't find my own account over SSH](004-icacls-workgroup-over-ssh.md) | 2 |
 
 ## Template
 
