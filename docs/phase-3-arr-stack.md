@@ -90,6 +90,7 @@ qBittorrent has no service mode, so NSSM runs it as one ([ADR 011](decisions/011
    | BitTorrent | When ratio reaches | **On**, `2` | Seed a while, then stop |
    | BitTorrent | When total seeding time reaches | **On**, `20160` min (14 days) | |
    | BitTorrent | then | **Remove torrent and its files** | Removes the download copy only. The library copy is a hardlink and stays |
+   | BitTorrent | Enable Local Peer Discovery to find more peers | **Off** | It announces on the home network, outside the tunnel |
    | Advanced | Network interface | **nord-wg** | Kill switch, layer 1: no tunnel, no traffic |
    | Advanced | Optional IP address to bind to | **All IPv4 addresses** | The tunnel is IPv4 only |
    | Web UI | Web User Interface (Remote control) | **On**, port `8080` | |
@@ -118,27 +119,40 @@ qBittorrent has no service mode, so NSSM runs it as one ([ADR 011](decisions/011
 
 Don't download anything real until all of this passes. If any check fails, stop and write a roadblock.
 
-The test file is Debian's netinst image, from Debian's own torrent page.
+The test file is Debian's netinst image, from Debian's own torrent page. It's under 1 GB and arrives in under a minute at full speed, which is too fast to test with, so slow it down first.
 
-1. In the qBittorrent web page, **Add torrent link**: the `.iso.torrent` link for **amd64 netinst** from <https://cdimage.debian.org/debian-cd/current/amd64/bt-cd/>. Wait until it downloads.
+The `nord-wg` adapter only exists while the tunnel runs, so qBittorrent only lists it then. The order below tests the binding on its own before the binding is changed, so it never has to be picked while the tunnel is down.
+
+Run the SSH commands from a `.ps1` file: through `ssh '...'`, the `$` in `WireGuardTunnel$nord-wg` gets lost. qBittorrent creates the file at full size at the start (a sparse file), so its size in Explorer doesn't show progress. Watch the web page's speed instead.
+
+1. In the web page, **Options → Speed**: global download limit `500` KiB/s. Then **Add torrent link**: the `.iso.torrent` link for **amd64 netinst** from <https://cdimage.debian.org/debian-cd/current/amd64/bt-cd/>.
 2. **Normal case.** Over SSH, list where qBittorrent's connections come from:
    ```powershell
    $q = (Get-Process qbittorrent).Id
    Get-NetTCPConnection -OwningProcess $q -State Established | Group-Object LocalAddress | Select-Object Count, Name
+   Get-NetUDPEndpoint -OwningProcess $q | Select-Object LocalAddress, LocalPort
    ```
-   Every peer connection should come from the tunnel's address. The only connections from the Ethernet address should be the web page (remote port on the Mac).
-3. **Tunnel down.**
+   Every peer connection and UDP port should be on the tunnel's address. Other than that, expect only the web page (local port 8080) and a pair of `127.0.0.1` connections that qBittorrent makes to itself.
+3. **Tunnel down, both layers on.**
    ```powershell
    Stop-Service 'WireGuardTunnel$nord-wg'
    ```
-   Within a minute the download speed in the web page should drop to 0, and the command from 2 should show no peer connections. The web page must still work from the Mac.
-4. **Layer 2 alone.** With the tunnel still down, set **Tools → Options → Advanced → Network interface** to **Any interface** in the web page. The download must stay at 0: only the firewall rule is stopping it now. Set it back to **nord-wg**.
-5. **Tunnel back.**
+   Within a minute the download speed should drop to 0, and the commands from 2 should show no peer connections and no UDP ports. The web page must still work from the Mac.
+4. **Layer 1 alone.** With the tunnel still down, turn off the firewall rule:
+   ```powershell
+   Disable-NetFirewallRule -Name homeserver-qBittorrent-KillSwitch-Out
+   ```
+   The download must stay at 0 for a minute: only the binding is stopping it now. Turn the rule back on:
+   ```powershell
+   Enable-NetFirewallRule -Name homeserver-qBittorrent-KillSwitch-Out
+   ```
+5. **Layer 2 alone.** With the tunnel still down, set **Options → Advanced → Network interface** to **Any interface** in the web page. qBittorrent now listens on the Ethernet address, and the download must stay at 0: only the firewall rule is stopping it.
+6. **Tunnel back.**
    ```powershell
    Start-Service 'WireGuardTunnel$nord-wg'
    ```
-   The download should resume within a few minutes.
-6. Delete the torrent and its files in the web page.
+   Reload the web page and set **Network interface** back to **nord-wg**. The download should resume within a minute, with every connection on the tunnel again.
+7. Set the download limit back to `0`, and delete the torrent and its files in the web page.
 
 ## 5. Prowlarr
 

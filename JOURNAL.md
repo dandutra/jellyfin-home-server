@@ -166,3 +166,16 @@ A dated log of the build. Short entries; anything that took real effort to solve
 - Result: `qBittorrent: Running, runs as NT SERVICE\qBittorrent`, `bound to nord-wg`. It runs in session 0 and uses about 53 MB of RAM. The web page answers from the Mac on port 8080.
 - qBittorrent listens only on `nord-wg` addresses, and the external IP it detected isn't the home one. The kill-switch block rule covers `Wi-Fi` and `Ethernet`. The script also turned off the two inbound rules Windows made when I clicked Cancel on the firewall prompt.
 - The kill switch itself gets tested in step 4.
+
+## 2026-10-19: Phase 3 step 4, kill switch passed
+
+- Test file: Debian 13.7.0 amd64 netinst from Debian's torrent page. The first try finished all 790 MB in about 20 seconds, before the tunnel could be stopped. I re-added it with a 500 KiB/s download limit.
+- Two things made the first checks misleading. qBittorrent creates the file at full size at the start (sparse), so I measured the bytes actually allocated on disk instead. And `ssh '... WireGuardTunnel$nord-wg ...'` lost the `$`, so the first "tunnel down" run never stopped the tunnel. The commands now go through a `.ps1` file.
+- Found during the normal-case check: Local Peer Discovery had UDP 6771 open on every adapter. The firewall rule already blocked it from sending on Ethernet. I turned it off anyway and added it to the step 3 table.
+- Results, 20 seconds of measurement each:
+  - tunnel up: every peer connection and UDP port on the tunnel address, about 13 MB written
+  - tunnel down, both layers: no peer connections, no UDP ports, 0 bytes; the web page still answered from the Mac
+  - tunnel down, binding set to Any interface (firewall only): qBittorrent listened on the Ethernet address, but made no peer connections, 0 bytes
+  - tunnel down, firewall rule off (binding only): no peer connections, no UDP ports, 0 bytes
+  - tunnel back: 22 peers through the tunnel within a minute, download resumed
+- The `nord-wg` adapter disappears while the tunnel is down, so qBittorrent can't offer it in the list then. I had to start the tunnel to set the binding back. The runbook now tests the binding alone first.
