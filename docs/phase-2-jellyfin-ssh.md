@@ -97,13 +97,14 @@ You log in with a *key pair* instead of a password. The private half stays on th
    ```bash
    ssh -o PubkeyAuthentication=no homeserver
    ```
-   This must fail with `Permission denied (publickey...)` without asking for a password.
+   This must fail with `Permission denied (publickey)` without asking for a password.
+   > The first run of the script left `keyboard-interactive` on the list of login methods. On Windows it never asks for a password, because nothing on Windows answers it, but the script now turns it off too so the config states what we mean.
 
 From here on, Claude runs the commands over SSH. The steps below still show them, so you can run them yourself.
 
 ## 4. Look at the `WsiAccount` profile
 
-An empty profile named `WsiAccount` appeared after the install. Nobody created it. Before deciding anything, find out what it is (read-only):
+A profile named `WsiAccount` appeared after the install, and nobody created it. To see what it is (read-only):
 
 ```powershell
 Get-LocalUser | Format-Table Name, Enabled, Description, LastLogon
@@ -111,7 +112,9 @@ Get-CimInstance Win32_UserProfile | Where-Object LocalPath -like '*Wsi*' |
     Format-List LocalPath, SID, Special, Loaded, LastUseTime
 ```
 
-Write the result in the journal. Leave the profile alone until we know which part of Windows created it.
+**What it turned out to be:** a **disabled** local account that Windows created itself. Its description reads *"A user account managed and used by the system for Web Sign-in scenarios."* It sits in the same list as `DefaultAccount` and `WDAGUtilityAccount`, which Windows also manages. Its folder holds a default profile (about 600 small files), not personal data.
+
+**Leave it alone.** A disabled account can't sign in, locally or over SSH, and deleting an account Windows manages can break the feature that uses it.
 
 ## 5. Power and updates
 
@@ -233,10 +236,10 @@ The configs (users, libraries, watch history) are small and take time to recreat
 
 ## Phase 2 done
 
-- [ ] BIOS: SupportAssist OS Recovery off, Windows Boot Manager first
-- [ ] Ethernet with DHCP reservations for both adapters; networks Private
-- [ ] SSH from the Mac with a key; passwords refused
-- [ ] `WsiAccount` identified and noted in the journal
+- [x] BIOS: SupportAssist OS Recovery off, Windows Boot Manager first
+- [x] Ethernet with DHCP reservations for both adapters; networks Private
+- [x] SSH from the Mac with a key; passwords refused
+- [x] `WsiAccount` identified and noted in the journal
 - [ ] No sleep on AC, lid does nothing, updates restart at 04:00
 - [ ] Jellyfin running as `NT SERVICE\JellyfinServer`, read-only on media
 - [ ] Quick Sync transcoding works

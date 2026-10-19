@@ -82,3 +82,10 @@ A dated log of the build. Short entries; anything that took real effort to solve
 - Deleted the backup on the Mac. Dell Command | Update says the drivers are up to date, so the Intel graphics driver for Quick Sync is in place.
 - Turned the Phase 2 outline into a runbook, with scripts for SSH, power and updates, the Jellyfin service and the nightly config backup.
 - **Jellyfin's account changed.** Reading the installer source showed two things: its default is Network Service, not Local System, and every upgrade deletes and re-creates the service on that account. A local user `svc-jellyfin` would need its password typed after every upgrade. A virtual account (`NT SERVICE\JellyfinServer`) has no password, and its permissions survive the re-create. [ADR 006](docs/decisions/006-service-accounts.md) is updated.
+
+## 2026-10-19: BIOS, network, SSH
+
+- BIOS: SupportAssist OS Recovery and its threshold off, Windows Boot Manager first, the old USB entry gone.
+- Ethernet plugged in, DHCP reservations for both adapters on the router, both networks set to Private. Setting a network to Private doesn't change internet access. It only tells the firewall to trust other devices at home.
+- **SSH works from the Mac with the key**, and a password login is refused without a prompt. A failed login still listed `keyboard-interactive` as a method. I tested it with a wrong password ready, and Windows never asked for one, but `setup-ssh.ps1` now turns it off too. Now a failed login lists only `publickey`.
+- **`WsiAccount`** is a disabled account that Windows manages itself, for "Web Sign-in scenarios" (its own description). It was created on 2026-10-17. Its profile is a default one, about 600 small files. Left as it is.

@@ -68,13 +68,23 @@ if ($LASTEXITCODE -ne 0) { throw "icacls failed on $adminKeys" }
 # 3. Key-only logins. sshd uses the first value it reads for each option,
 # so a block at the top of the file wins over anything below it, including
 # the default "Match Group administrators" block at the end.
-$marker = '# homeserver: key-only logins (ADR 005)'
+# Windows has no backend for keyboard-interactive, so it never prompts, but
+# we turn it off anyway so the config says what it means.
+$block = @(
+    '# homeserver: key-only logins (ADR 005)',
+    'PasswordAuthentication no',
+    'KbdInteractiveAuthentication no',
+    'PubkeyAuthentication yes'
+)
 $lines = @(Get-Content -LiteralPath $sshdConfig)
-if ($lines -notcontains $marker) {
-    $block = @($marker, 'PasswordAuthentication no', 'PubkeyAuthentication yes', '')
+# Drop an older copy of the block, then put the current one on top.
+$rest = @($lines | Where-Object { $block -notcontains $_ })
+while ($rest.Count -gt 0 -and $rest[0] -eq '') { $rest = @($rest | Select-Object -Skip 1) }
+$wanted = $block + '' + $rest
+if (Compare-Object $lines $wanted -SyncWindow 0) {
     Copy-Item $sshdConfig "$sshdConfig.bak" -Force
-    Set-Content -LiteralPath $sshdConfig -Value ($block + $lines) -Encoding Ascii
-    Write-Output 'sshd_config: passwords off (backup in sshd_config.bak).'
+    Set-Content -LiteralPath $sshdConfig -Value $wanted -Encoding Ascii
+    Write-Output 'sshd_config: key-only block written (backup in sshd_config.bak).'
 }
 & $sshd -t
 if ($LASTEXITCODE -ne 0) { throw 'sshd -t rejected sshd_config; restore sshd_config.bak' }
