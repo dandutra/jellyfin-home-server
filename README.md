@@ -9,7 +9,7 @@ This repo holds the runbooks, scripts, decision records and a log of what went w
 | Phase | Scope | Status |
 |---|---|---|
 | 1. Clean rebuild | Backup, malware scan, BIOS update, hardware upgrade, clean Windows 11 Pro install | ✅ Done, [runbook](docs/phase-1-rebuild.md) |
-| 2. SSH + Jellyfin | OpenSSH (key-only, LAN-only), power/update policy, Jellyfin as a low-privilege service, Quick Sync transcoding, config backups | 🟡 Next, [outline](docs/phase-2-jellyfin-ssh.md) |
+| 2. SSH + Jellyfin | OpenSSH (key-only, LAN-only), power/update policy, Jellyfin as a low-privilege service, Quick Sync transcoding, config backups | 🟡 In progress, [runbook](docs/phase-2-jellyfin-ssh.md) |
 | 3. Automation | qBittorrent, Sonarr, Radarr, Prowlarr as native services with hardlinked media | ⚪ Planned after Phase 2 |
 
 ## Architecture
@@ -22,7 +22,7 @@ flowchart LR
         Fire[Fire TV Stick<br/>1080p]
         subgraph Server[homeserver · Latitude 3410 · Win 11 Pro]
             SSH[OpenSSH Server<br/>key-only]
-            JF[Jellyfin<br/>svc-jellyfin]
+            JF[Jellyfin<br/>NT SERVICE account]
             C[(C: 256 GB NVMe<br/>OS + app configs)]
             D[(D: 500 GB SATA SSD<br/>media)]
         end
@@ -53,13 +53,13 @@ Nothing is exposed to the internet. Remote viewing is out of scope.
 ```
 docs/
   phase-1-rebuild.md        step-by-step runbook
-  phase-2-jellyfin-ssh.md   outline, becomes a runbook when Phase 1 is done
+  phase-2-jellyfin-ssh.md   step-by-step runbook
   decisions/                why things are the way they are (short ADRs)
   roadblocks/               problems hit: Problem → Tried → Cause → Fix → Learned
   img/                      teardown photos and screenshots
 scripts/
-  mac/                      run on the admin Mac (build the USB stick, scan the backup)
-  windows/                  run on the server (pre-wipe checks, backup)
+  mac/                      run on the admin Mac (build the USB stick, scan the backup, pull config backups)
+  windows/                  run on the server (pre-wipe checks, backup, SSH, Jellyfin service)
 JOURNAL.md                  dated log of the whole build
 ```
 

@@ -76,3 +76,9 @@ A dated log of the build. Short entries; anything that took real effort to solve
 - **Restore:** I used Cut instead of Copy on the share for one account's files, which removed them from the Mac before I had checked them on the laptop. Nothing was lost, but the runbook now says to copy. We went through the backup together and kept only what we needed. Most of it was old downloads.
 - `pre-wipe-checks.ps1` after the install: Windows 11 Pro, Licensed (firmware OEM key), AHCI controller, both drives visible. Before the install, the controller was in RAID mode (Intel RST).
 - There's an empty profile named `WsiAccount` that I didn't create. To look at in Phase 2.
+
+## 2026-10-19: Phase 2 starts
+
+- Deleted the backup on the Mac. Dell Command | Update says the drivers are up to date, so the Intel graphics driver for Quick Sync is in place.
+- Turned the Phase 2 outline into a runbook, with scripts for SSH, power and updates, the Jellyfin service and the nightly config backup.
+- **Jellyfin's account changed.** Reading the installer source showed two things: its default is Network Service, not Local System, and every upgrade deletes and re-creates the service on that account. A local user `svc-jellyfin` would need its password typed after every upgrade. A virtual account (`NT SERVICE\JellyfinServer`) has no password, and its permissions survive the re-create. [ADR 006](docs/decisions/006-service-accounts.md) is updated.
