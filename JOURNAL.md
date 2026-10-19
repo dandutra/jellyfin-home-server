@@ -157,3 +157,12 @@ A dated log of the build. Short entries; anything that took real effort to solve
 - The routing table now has `0.0.0.0/1` and `128.0.0.0/1` on `nord-wg` (metric 5). The default route stays on Ethernet (metric 25) but loses to the two more specific routes. SSH and Jellyfin's health check still answer from the Mac.
 - Only SYSTEM and Administrators can read `C:\ProgramData\homeserver\vpn`. I deleted the downloaded copy of the config.
 - Not tested yet: the tunnel connecting at boot with nobody signed in. Step 11 covers it.
+
+## 2026-10-19: Phase 3 step 3, qBittorrent
+
+- qBittorrent installed at the laptop without the installer's firewall rule or file associations, then run once with `--profile=C:\ProgramData\qBittorrent` to set the options. Its settings live in `C:\ProgramData\qBittorrent\qBittorrent\config\qBittorrent.ini`.
+- qBittorrent 5 writes the bound adapter's name to `Session\InterfaceName`. `Session\Interface` holds an ID (`iftype53_32768`). The script's bind check read the wrong key, so I fixed it before the first run.
+- First run of `setup-arr-services.ps1` stopped at once: it granted rights to `NT SERVICE\qBittorrent` before creating the service, and Windows can't resolve a virtual account until its service exists. I moved the grant below the install, and the second run went through.
+- Result: `qBittorrent: Running, runs as NT SERVICE\qBittorrent`, `bound to nord-wg`. It runs in session 0 and uses about 53 MB of RAM. The web page answers from the Mac on port 8080.
+- qBittorrent listens only on `nord-wg` addresses, and the external IP it detected isn't the home one. The kill-switch block rule covers `Wi-Fi` and `Ethernet`. The script also turned off the two inbound rules Windows made when I clicked Cancel on the firewall prompt.
+- The kill switch itself gets tested in step 4.

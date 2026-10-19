@@ -78,12 +78,12 @@ if (Test-Path $QbittorrentExe) {
         if (-not (Test-Path $NssmSource)) { throw "NSSM not found at $NssmSource" }
         Copy-Item -LiteralPath $NssmSource -Destination $nssm
     }
-    # NSSM runs as the service's own account, so that account has to be able to start it.
-    Invoke-Checked icacls.exe $binDir /grant 'NT SERVICE\qBittorrent:(OI)(CI)RX'
-
     if (-not (Get-Service qBittorrent -ErrorAction SilentlyContinue)) {
         Invoke-Checked $nssm install qBittorrent $QbittorrentExe
     }
+    # NSSM runs as the service's own account, so that account has to be able to start it.
+    # The account name only resolves once the service exists.
+    Invoke-Checked icacls.exe $binDir /grant 'NT SERVICE\qBittorrent:(OI)(CI)RX'
     Invoke-Checked $nssm set qBittorrent Application $QbittorrentExe
     Invoke-Checked $nssm set qBittorrent AppParameters "--profile=$QbittorrentProfile"
     Invoke-Checked $nssm set qBittorrent AppDirectory (Split-Path $QbittorrentExe)
@@ -153,7 +153,8 @@ foreach ($a in $present) {
     Write-Output ('{0}: {1}, runs as {2}, start mode {3}' -f $svc.Name, $svc.State, $svc.StartName, $svc.StartMode)
 }
 if ($ini) {
-    $bound = Select-String -Path $ini.FullName -Pattern '^Session\\Interface=(.*)$' |
+    # qBittorrent 5 keeps the name in InterfaceName; Interface holds an ID like iftype53_32768.
+    $bound = Select-String -Path $ini.FullName -Pattern '^Session\\InterfaceName=(.*)$' |
         ForEach-Object { $_.Matches[0].Groups[1].Value }
     if ($bound -eq $VpnInterface) {
         Write-Output "qBittorrent is bound to $VpnInterface."

@@ -68,12 +68,16 @@ qBittorrent has no service mode, so NSSM runs it as one ([ADR 011](decisions/011
 
 **At the laptop:**
 
-1. Install qBittorrent (64-bit) from <https://www.qbittorrent.org/download>.
+1. Install qBittorrent (64-bit) from <https://www.qbittorrent.org/download>. Installer options:
+   - **Add Windows Firewall rule**: off. It would let the internet connect in. The setup script makes the rules.
+   - **Disable Windows path length limit**: on. Some torrents have very long file names.
+   - **Associate .torrent files** and **magnet links**: off. A double-click on the desktop would start a second copy with the default profile.
+   - **Run qBittorrent** on the last page: off. It has to start with the profile below.
 2. Start it once with the server's profile folder. Press **Win+R** and run:
    ```
    "C:\Program Files\qBittorrent\qbittorrent.exe" --profile=C:\ProgramData\qBittorrent
    ```
-3. Accept the legal notice. If Windows Firewall asks whether to allow qBittorrent, click **Cancel**. The setup script opens only what's needed.
+3. Accept the legal notice. If Windows Firewall asks whether to allow qBittorrent, click **Cancel**. The setup script opens only what's needed. Cancel can leave inbound block rules for `qbittorrent.exe`, which would also block the web page; the script turns them off.
 4. **Tools → Options**:
 
    | Page | Setting | Value | Why |
