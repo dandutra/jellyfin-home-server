@@ -128,15 +128,35 @@ powershell -ExecutionPolicy Bypass -File .\set-power-and-updates.ps1
 - Hibernation is off. That also turns off Fast Startup, so F2/F12 at the Dell logo work again.
 - Windows Update installs automatically every day at 04:00 and restarts if it needs to. Active hours are 05:00–23:00, so it never restarts during the day.
 
+Until this step runs, the laptop still sleeps on its default timer, and SSH just times out (`Connection timed out during banner exchange`). Wake it at the keyboard first.
+
+To check it worked, the script prints the AC sleep timeout and the lid action, both `0x00000000`. The lid action is a hidden setting: `powercfg /query` prints nothing for it, only `powercfg /qh` does. `powercfg /a` should list Hibernate as *not enabled*. The laptop uses Modern Standby (S0), so S3 sleep doesn't exist on it anyway.
+
 ## 6. Media folders and test files
 
 1. Make the folders for the test files. Step 8 creates the rest of the tree from [ADR 007](decisions/007-config-and-media-layout.md):
    ```powershell
    New-Item -ItemType Directory -Force 'D:\data\media\movies\Big Buck Bunny (2008)', 'D:\data\media\movies\Jellyfin test 4K HEVC'
    ```
-2. Download test files that are free to use:
-   - *Big Buck Bunny* (2008, Blender Foundation, CC BY 3.0), 1080p H.264, into its folder.
-   - A 4K HEVC 10-bit clip from Jellyfin's own test set at <https://repo.jellyfin.org/test-videos/>. It tests direct play on the LG and Quick Sync on everything else.
+2. Download test files that are free to use. Turning off the progress bar makes `Invoke-WebRequest` on PowerShell 5.1 many times faster:
+   - *Big Buck Bunny* (2008, Blender Foundation, CC BY 3.0), 1080p H.264. Blender serves it only as a zip (725 MB, a 692 MB `.mov` inside):
+     ```powershell
+     $ProgressPreference = 'SilentlyContinue'
+     $bbb = 'D:\data\media\movies\Big Buck Bunny (2008)'
+     Invoke-WebRequest -UseBasicParsing 'https://download.blender.org/peach/bigbuckbunny_movies/big_buck_bunny_1080p_h264.mov.zip' -OutFile "$bbb\bbb.zip"
+     Expand-Archive "$bbb\bbb.zip" -DestinationPath $bbb
+     Remove-Item "$bbb\bbb.zip"
+     ```
+   - `Test Jellyfin 4K HEVC 10bit 40M.mp4` (141 MB) from Jellyfin's own test set at <https://repo.jellyfin.org/test-videos/> (CC BY-SA 4.0). It tests direct play on the LG and Quick Sync on everything else. It's the lowest bitrate of the 4K 10-bit clips, which is enough for both tests. Check it against the published SHA-256:
+     ```powershell
+     $hevc = 'D:\data\media\movies\Jellyfin test 4K HEVC'
+     $url  = 'https://repo.jellyfin.org/test-videos/SDR/HEVC%2010bit/Test%20Jellyfin%204K%20HEVC%2010bit%2040M.mp4'
+     Invoke-WebRequest -UseBasicParsing $url -OutFile "$hevc\Test Jellyfin 4K HEVC 10bit 40M.mp4"
+     $sum = Invoke-WebRequest -UseBasicParsing "$url.sha256sum"
+     $expected = ([Text.Encoding]::ASCII.GetString($sum.Content) -split '\s+')[0]
+     $expected -eq (Get-FileHash "$hevc\Test Jellyfin 4K HEVC 10bit 40M.mp4").Hash   # True
+     ```
+     > The server sends `.sha256sum` as `application/octet-stream`, so PowerShell 5.1 returns `.Content` as bytes, not text. Splitting the bytes without decoding them first gave `False` on a good file.
 
 ## 7. Install Jellyfin (at the laptop)
 
@@ -240,7 +260,7 @@ The configs (users, libraries, watch history) are small and take time to recreat
 - [x] Ethernet with DHCP reservations for both adapters; networks Private
 - [x] SSH from the Mac with a key; passwords refused
 - [x] `WsiAccount` identified and noted in the journal
-- [ ] No sleep on AC, lid does nothing, updates restart at 04:00
+- [x] No sleep on AC, lid does nothing, updates restart at 04:00
 - [ ] Jellyfin running as `NT SERVICE\JellyfinServer`, read-only on media
 - [ ] Quick Sync transcoding works
 - [ ] LG direct plays 4K; Fire TV plays with transcoding

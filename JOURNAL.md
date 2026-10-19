@@ -89,3 +89,10 @@ A dated log of the build. Short entries; anything that took real effort to solve
 - Ethernet plugged in, DHCP reservations for both adapters on the router, both networks set to Private. Setting a network to Private doesn't change internet access. It only tells the firewall to trust other devices at home.
 - **SSH works from the Mac with the key**, and a password login is refused without a prompt. A failed login still listed `keyboard-interactive` as a method. I tested it with a wrong password ready, and Windows never asked for one, but `setup-ssh.ps1` now turns it off too. Now a failed login lists only `publickey`.
 - **`WsiAccount`** is a disabled account that Windows manages itself, for "Web Sign-in scenarios" (its own description). It was created on 2026-10-17. Its profile is a default one, about 600 small files. Left as it is.
+
+## 2026-10-19: Power, updates, test files
+
+- The first SSH attempt timed out: the laptop had gone to sleep, because step 5 is the one that stops it sleeping. I woke it at the keyboard.
+- `set-power-and-updates.ps1` worked first time: no sleep on AC, screen off after 5 minutes, hibernation off, updates at 04:00, active hours 05:00–23:00. The lid line in its output was blank. "Lid close action" is a hidden setting, so `powercfg /query` skips it. `powercfg /qh` shows it as *Do nothing* on AC. The script now uses `/qh`.
+- The laptop only has Modern Standby (S0). S3 sleep doesn't exist on it.
+- Test files are on D:: *Big Buck Bunny* 1080p H.264 (Blender only serves it as a zip now) and Jellyfin's `Test Jellyfin 4K HEVC 10bit 40M.mp4`. My hash check said `False` on the HEVC clip, but the file was fine: PowerShell 5.1 returned the `.sha256sum` file as bytes, so I was comparing against garbage. The hash and the size both match the published values. The runbook now decodes the bytes first.

@@ -59,7 +59,8 @@ Write-Policy $wu ActiveHoursEnd 23
 
 Write-Output 'Power (AC):'
 & powercfg.exe /query SCHEME_CURRENT SUB_SLEEP STANDBYIDLE | Select-String 'Current AC'
-& powercfg.exe /query SCHEME_CURRENT SUB_BUTTONS LIDACTION | Select-String 'Current AC'
+# LIDACTION is a hidden setting: /query prints nothing for it, /qh does
+& powercfg.exe /qh SCHEME_CURRENT SUB_BUTTONS LIDACTION | Select-String 'Current AC'
 Write-Output ''
 Write-Output 'Windows Update policy:'
 Get-ItemProperty $au | Select-Object NoAutoUpdate, AUOptions, ScheduledInstallDay, ScheduledInstallTime | Format-List
