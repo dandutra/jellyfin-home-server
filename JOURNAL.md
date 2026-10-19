@@ -103,3 +103,11 @@ A dated log of the build. Short entries; anything that took real effort to solve
 - ffmpeg 8.1.3 ships with the `*_qsv` decoders and encoders, so Quick Sync should be available.
 - `setup-jellyfin-service.ps1` failed at icacls with exit code 1332, because over SSH `USERDOMAIN` is `WORKGROUP`. The script now uses the admin account's SID. See [roadblock 004](docs/roadblocks/004-icacls-workgroup-over-ssh.md). The three untested parts all worked: `sc config ... obj= "NT SERVICE\JellyfinServer"` with no password, icacls resolving the `NT SERVICE\` name, and `sc failureflag`.
 - Jellyfin now runs as `NT SERVICE\JellyfinServer`. It has read-only access to `D:\data` and modify rights on its data folder. Ports 8096 and 7359 are open to the home network only, and the Mac gets `Healthy` from it.
+
+## 2026-10-19: First-run setup and Quick Sync
+
+- First-run wizard done in the Mac's browser: Jellyfin admin account, Movies and Shows libraries, remote connections on, automatic port mapping off. Both test files showed up. The server log warns that the `tv` library is empty, which it is.
+- I first opened the user menu's *Settings → Playback* by mistake. That page holds per-user preferences. The server's Quick Sync settings are under the admin *Dashboard → Playback → Transcoding*.
+- Before the dashboard test, I ran Jellyfin's ffmpeg over SSH: 4K HEVC 10-bit to 720p H.264 on Quick Sync, at 119 fps (2× real-time).
+- **The dashboard test worked under `NT SERVICE\JellyfinServer`:** D3D11VA decode, `vpp_qsv` scaling and `h264_qsv` encode, 150 fps (2.4× real-time), `FFmpeg exited with code 0`. The virtual account needed no extra rights for the GPU, which had been the expected trouble spot.
+- The CPU check from the runbook didn't work: the clip was fully converted in 12 seconds, before I looked. The ffmpeg log's `fps` and `speed` are the measure now.

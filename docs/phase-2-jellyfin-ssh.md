@@ -216,15 +216,34 @@ From the Mac, `curl http://<server-ip>:8096/health` should also say `Healthy`, w
 
 When a TV can't play a file as it is, Jellyfin converts it on the fly (*transcodes*). The CPU alone is too slow for 4K. Quick Sync is the video engine built into the Intel graphics, and it does the job with little CPU.
 
-1. **Dashboard → Playback → Transcoding**:
+1. **Dashboard → Playback → Transcoding**. This is the admin Dashboard (☰ menu → Dashboard), not the user menu's *Settings → Playback*. That page only holds per-user preferences such as audio language and streaming quality:
    - Hardware acceleration: **Intel QuickSync (QSV)**
    - Hardware decoding: tick **H264, HEVC, MPEG2, VC1, VP8, VP9, HEVC 10bit, VP9 10bit**. Leave AV1 unticked, the UHD 620 can't decode it.
    - Tick **Enable hardware encoding**.
    - Tick **Enable tone mapping**, so 4K HDR looks right when converted to 1080p SDR for the Fire TV.
    - Save.
 2. Test: play the 4K test clip in the Mac's browser and pick a lower quality (gear icon → Quality → 720p), so Jellyfin has to transcode.
-3. **Dashboard → Activity**, or the playback info in the player, should show the transcode, and CPU use in Task Manager should stay low.
-4. If playback fails, look at the newest `FFmpeg.Transcode-*.log` in `C:\ProgramData\Jellyfin\Server\log`. Quick Sync errors there under the service account are the expected trouble spot. Log them as a roadblock.
+3. Check the newest `FFmpeg.Transcode-*.log` in `C:\ProgramData\Jellyfin\Server\log`. These are the lines that show it worked:
+   ```
+   -init_hw_device d3d11va=dx11:,vendor=0x8086 -init_hw_device qsv=qs@dx11 ... -hwaccel d3d11va
+   ... -codec:v:0 h264_qsv ... vpp_qsv=w=960:h=540 ...
+   Stream #0:0 -> #0:0 (hevc (native) -> h264 (h264_qsv))
+   frame= 1797 fps=150 ... speed=2.44x
+   ```
+   Decoding goes through D3D11VA, which runs on the same Intel video engine. Jellyfin picks it because *Prefer OS native DXVA or VA-API hardware decoders* is on by default. Scaling (`vpp_qsv`) and encoding (`h264_qsv`) use Quick Sync. The server log should end the job with `FFmpeg exited with code 0`.
+
+   Watching CPU in Task Manager doesn't work well as a check. At 2.4× real-time, the 30-second clip was fully converted in 12 seconds, before Task Manager showed anything. The `fps` and `speed` in the log are the better measure. Software decoding of 4K HEVC 10-bit on this CPU would run far below 1×.
+
+   Before touching the dashboard, you can test Quick Sync with Jellyfin's ffmpeg straight from SSH. This only reads the clip and writes a temporary file:
+   ```powershell
+   & 'C:\Program Files\Jellyfin\Server\ffmpeg.exe' -hide_banner -stats -y `
+       -init_hw_device d3d11va=dx11:,vendor=0x8086 -init_hw_device qsv=qs@dx11 -filter_hw_device qs `
+       -hwaccel qsv -hwaccel_output_format qsv -c:v hevc_qsv `
+       -i 'D:\data\media\movies\Jellyfin test 4K HEVC\Test Jellyfin 4K HEVC 10bit 40M.mp4' -t 10 `
+       -vf 'scale_qsv=w=1280:h=720:format=nv12' -c:v h264_qsv -b:v 4M -an "$env:TEMP\qsvtest.mp4"
+   ```
+   Here it ran at 119 fps (2× real-time) with Intel UHD Graphics driver 31.0.101.2135.
+4. If playback fails, the same log is where Quick Sync errors show up. Log them as a roadblock.
 
 ## 11. Users and clients
 
@@ -273,7 +292,7 @@ The configs (users, libraries, watch history) are small and take time to recreat
 - [x] `WsiAccount` identified and noted in the journal
 - [x] No sleep on AC, lid does nothing, updates restart at 04:00
 - [x] Jellyfin running as `NT SERVICE\JellyfinServer`, read-only on media
-- [ ] Quick Sync transcoding works
+- [x] Quick Sync transcoding works
 - [ ] LG direct plays 4K; Fire TV plays with transcoding
 - [ ] Nightly config backup lands on the Mac
 - [ ] Services come back after a reboot with nobody signed in
