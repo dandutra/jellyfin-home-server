@@ -179,3 +179,10 @@ A dated log of the build. Short entries; anything that took real effort to solve
   - tunnel down, firewall rule off (binding only): no peer connections, no UDP ports, 0 bytes
   - tunnel back: 22 peers through the tunnel within a minute, download resumed
 - The `nord-wg` adapter disappears while the tunnel is down, so qBittorrent can't offer it in the list then. I had to start the tunnel to set the binding back. The runbook now tests the binding alone first.
+
+## 2026-10-20: Server and router moved to their final spot
+
+- Shut the server down cleanly and moved it and the router. Both were unplugged. Powered the router on first, then the server.
+- In the morning nothing on the server answered from the Mac, and the 04:13 backup pull had failed. Windows had treated the network as new and made it Public, which none of my firewall rules cover ([roadblock 006](docs/roadblocks/006-public-network-after-the-move.md)). Set it back to Private at the laptop.
+- The server had run all night: its 03:30 backup worked (result 0). A manual pull on the Mac fetched `jellyfin-config-20261020-0330.zip`, and Jellyfin was `Healthy`.
+- After the boot: `WireGuardTunnel$nord-wg`, `qBittorrent`, `JellyfinServer` and `sshd` all running, and qBittorrent's UDP ports are on the tunnel only. The step 11 reboot test still needs a run with nobody signed in.
