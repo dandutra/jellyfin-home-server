@@ -270,6 +270,8 @@ The launchd job from Phase 2 runs the same script, so nothing else changes on th
 4. On the Mac, run `pull-config-backup.sh` again: `Apps: all answered`.
 5. Run the scheduled task again (step 10.2) and check `VPN: up`.
 
+`Get-NetConnectionProfile` shows `nord-wg` as **Public** and Ethernet as **Private**. That's right: the LAN-only rules don't apply on the tunnel. If Ethernet shows Public, see [roadblock 006](roadblocks/006-public-network-after-the-move.md).
+
 ## Upkeep
 
 - **Sonarr, Radarr, Prowlarr, Bazarr** update themselves. Their updaters keep the service account.
@@ -283,14 +285,14 @@ The launchd job from Phase 2 runs the same script, so nothing else changes on th
 
 ## Phase 3 done
 
-- [ ] NordVPN app removed; WireGuard tunnel service connects at boot; LAN still works
-- [ ] qBittorrent runs as `NT SERVICE\qBittorrent`, bound to `nord-wg`
-- [ ] Kill-switch test passed (tunnel down, then each layer on its own)
+- [x] NordVPN app removed; WireGuard tunnel service connects at boot; LAN still works
+- [x] qBittorrent runs as `NT SERVICE\qBittorrent`, bound to `nord-wg`
+- [x] Kill-switch test passed (tunnel down, then each layer on its own)
 - [ ] Prowlarr with Internet Archive only
-- [ ] Radarr and Sonarr: hardlinks, 1080p default, 50 GB floor, qBittorrent connected
-- [ ] Bazarr: English + Brazilian Portuguese from OpenSubtitles.com
-- [ ] Every web page needs a login; all are LAN-only
+- [x] Radarr and Sonarr: hardlinks, HD-1080p picked when adding, 50 GB floor, qBittorrent connected
+- [x] Bazarr: English + Brazilian Portuguese from OpenSubtitles.com
+- [x] Every web page needs a login; all are LAN-only
 - [ ] End-to-end: one item searched, downloaded, hardlinked, subtitled, played on a TV
-- [ ] Nightly backup includes the Phase 3 apps; the Mac logs `VPN: up`
-- [ ] Everything comes back after a reboot with nobody signed in
+- [x] Nightly backup includes the Phase 3 apps; the Mac logs `VPN: up`
+- [x] Everything comes back after a reboot with nobody signed in
 - [ ] Journal updated; roadblocks written up

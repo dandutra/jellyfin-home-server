@@ -228,3 +228,12 @@ A dated log of the build. Short entries; anything that took real effort to solve
 - First run of `backup-arr-config.ps1`: the runbook says to make the first backup by hand with **Backup Now**, but those zips go to `Backups\manual`, and the script only looked in `Backups\scheduled`. It now takes the newest zip from any subfolder.
 - Registered `homeserver-arr-backup` (SYSTEM, 03:35). The first run said `VPN: up` and that no app had a backup yet, which was true: their daily schedules hadn't run. qBittorrent stopped for the copy and started again.
 - After Backup Now in all four apps: `Backups: ok`, a 4.1 MB zip, and the Mac pull logged `VPN: up`, `Backups: ok` and `Apps: all answered`.
+
+## 2026-10-21: Phase 3 step 11, reboot test passed
+
+- Restarted from the Mac with nobody signed in at the laptop (the admin had been signed in since 2026-10-19). SSH answered again after 41 seconds.
+- Two minutes later all eight services were running: sshd, Jellyfin, the tunnel, qBittorrent, Prowlarr, Radarr, Sonarr and Bazarr, with Bazarr's Python under `NT SERVICE\Bazarr`. qBittorrent only listened on `nord-wg` (its IPv4 and the adapter's IPv6 link-local address). Ethernet stayed Private, and `nord-wg` is Public.
+- Backup task: `VPN: up`, `Backups: ok`. Mac pull: `Apps: all answered`, Jellyfin `Healthy`.
+- Free RAM with nobody signed in: 4.0 GB, against 1.0 GB with the admin session open.
+- Still open: Internet Archive is down, so the Prowlarr indexer and the step 9 end-to-end test wait.
+- Live TV was looked at and dropped. It's not part of the project.
