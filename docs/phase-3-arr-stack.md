@@ -185,7 +185,7 @@ The apps (Radarr, Sonarr) get added to Prowlarr in steps 6 and 7.
    - **Rename Movies: on**
    - **Use Hardlinks instead of Copy: on** (the default)
    - **Minimum Free Space: 51200** MB. Radarr won't import anything that would leave less than 50 GB free.
-3. **Settings → Profiles**: keep **HD-1080p** as the default for new movies. **Ultra-HD** is the 4K profile, picked per movie only when it's for the LG ([ADR 004](decisions/004-4k-direct-play-only.md)).
+3. **Quality profiles:** nothing to change in **Settings → Profiles**, and don't delete any. Radarr has no global default. You pick the profile in the Add Movie dialog, and the browser remembers the last pick. Pick **HD-1080p** the first time. **Ultra-HD** is the 4K profile, picked per movie only when it's for the LG ([ADR 004](decisions/004-4k-direct-play-only.md)).
 4. **Settings → Download Clients → + → qBittorrent**: host `localhost`, port `8080`, the qBittorrent username and password, category `movies`. Test, save.
 5. **Settings → General → Backups**: interval **1** day, retention **7** days.
 6. **Settings → General**: copy the **API Key**.
@@ -199,7 +199,7 @@ The apps (Radarr, Sonarr) get added to Prowlarr in steps 6 and 7.
 
 **In the Mac's browser,** `http://<server-ip>:8989`: the same as Radarr, with:
 - root folder `D:\data\media\tv`, **Rename Episodes: on**, hardlinks on, minimum free space 51200 MB
-- default quality profile **HD-1080p**
+- quality profile **HD-1080p** in the Add Series dialog (no global default, same as Radarr)
 - qBittorrent category `tv`
 - backups daily, keep 7
 - in Prowlarr, **Settings → Apps → + → Sonarr** with `http://localhost:8989` and Sonarr's API key
