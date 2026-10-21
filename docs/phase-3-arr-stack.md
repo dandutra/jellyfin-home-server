@@ -89,7 +89,7 @@ qBittorrent has no service mode, so NSSM runs it as one ([ADR 011](decisions/011
    | Connection | Use UPnP / NAT-PMP port forwarding from my router | **Off** | Nothing opens ports on the router |
    | BitTorrent | When ratio reaches | **On**, `2` | Seed a while, then stop |
    | BitTorrent | When total seeding time reaches | **On**, `20160` min (14 days) | |
-   | BitTorrent | then | **Remove torrent and its files** | Removes the download copy only. The library copy is a hardlink and stays |
+   | BitTorrent | then | **Stop torrent** | Radarr and Sonarr refuse a qBittorrent that removes torrents itself. Their **Remove Completed** deletes the stopped torrent and its download copy after import. The library copy is a hardlink and stays |
    | BitTorrent | Enable Local Peer Discovery to find more peers | **Off** | It announces on the home network, outside the tunnel |
    | Advanced | Network interface | **nord-wg** | Kill switch, layer 1: no tunnel, no traffic |
    | Advanced | Optional IP address to bind to | **All IPv4 addresses** | The tunnel is IPv4 only |
@@ -161,6 +161,8 @@ Run the SSH commands from a `.ps1` file: through `ssh '...'`, the `$` in `WireGu
 **Over SSH:** run `setup-arr-services.ps1` again. It should report `Prowlarr: Running, runs as NT SERVICE\Prowlarr`.
 
 At the end, the installer also starts Prowlarr at the desktop. That copy finds the service already running, opens the browser and quits. Its log shows `Another instance of Prowlarr is already running` and a `Fatal` startup line, which is expected. Under the virtual account, every start logs `Couldn't set permission for C:\ProgramData\Prowlarr ... WorldSid`: Prowlarr tries to give Everyone Modify on its folder, and its account isn't allowed to change permissions. Leave it that way.
+
+The installer gives every user account Modify on `C:\ProgramData\Prowlarr`, including `bin`, the program the service runs. The script takes that away, and the same goes for every app's config folder: only SYSTEM, Administrators and the app's own account keep access. At the laptop, Explorer then asks for admin approval to open these folders. Click **Cancel**, not **Continue**: Continue adds your account to the folder for good.
 
 **In the Mac's browser,** `http://<server-ip>:9696`:
 1. Create the login: **Forms**, **Authentication Required: Enabled**, your username and a strong password.

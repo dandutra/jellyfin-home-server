@@ -19,7 +19,8 @@
       folder first (runbook step 3).
     - Switches each service to NT SERVICE\<service> and sets it to restart
       after a crash.
-    - Gives each account modify rights on its config folder, and
+    - Gives each account modify rights on its config folder, and takes away
+      everyone else's except SYSTEM and Administrators. Gives
       qBittorrent, Sonarr, Radarr and Bazarr modify rights on D:\data\media.
       Prowlarr gets nothing on D:. Jellyfin's read-only access is unchanged.
     - Opens each web page's port to the local subnet on the Private profile.
@@ -113,6 +114,11 @@ foreach ($a in $apps) {
     if (-not (Test-Path $a.Config)) { throw "Config folder not found: $($a.Config)" }
     # The built-in updaters write to the program files under this folder too.
     Invoke-Checked icacls.exe $a.Config /grant "${account}:(OI)(CI)M" /T /C /Q
+    # The *arr installers give Users Modify here, bin included, and ProgramData lets
+    # Users add files to subfolders. Either way a standard account could change what
+    # the service runs. Keep only SYSTEM, Administrators and the app (by SID, roadblock 004).
+    Invoke-Checked icacls.exe $a.Config /inheritance:r /grant:r '*S-1-5-18:(OI)(CI)F' '*S-1-5-32-544:(OI)(CI)F' "${account}:(OI)(CI)M"
+    Invoke-Checked icacls.exe $a.Config /remove:g '*S-1-5-32-545' '*S-1-3-0'
     if ($a.Media) { Invoke-Checked icacls.exe $MediaRoot /grant "${account}:(OI)(CI)M" }
     $present += $a
 }
