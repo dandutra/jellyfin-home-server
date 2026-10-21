@@ -222,3 +222,9 @@ A dated log of the build. Short entries; anything that took real effort to solve
 ## 2026-10-21: Internet Archive still unreachable
 
 - The retry before step 9 failed again: TCP to `207.241.224.2:443` times out from the home connection, and the server gets a TLS EOF through the tunnel. A fetch from an outside cloud service was refused (`ECONNREFUSED`). Instatus shows hundreds of outage reports in the last hour, and an earlier spike on 2026-10-20. It's archive.org, not this setup. The indexer and step 9 wait until it's back.
+
+## 2026-10-21: Phase 3 step 10, nightly arr backup
+
+- First run of `backup-arr-config.ps1`: the runbook says to make the first backup by hand with **Backup Now**, but those zips go to `Backups\manual`, and the script only looked in `Backups\scheduled`. It now takes the newest zip from any subfolder.
+- Registered `homeserver-arr-backup` (SYSTEM, 03:35). The first run said `VPN: up` and that no app had a backup yet, which was true: their daily schedules hadn't run. qBittorrent stopped for the copy and started again.
+- After Backup Now in all four apps: `Backups: ok`, a 4.1 MB zip, and the Mac pull logged `VPN: up`, `Backups: ok` and `Apps: all answered`.
