@@ -10,7 +10,7 @@ This repo holds the runbooks, scripts, decision records and a log of what went w
 |---|---|---|
 | 1. Clean rebuild | Backup, malware scan, BIOS update, hardware upgrade, clean Windows 11 Pro install | ✅ Done, [runbook](docs/phase-1-rebuild.md) |
 | 2. SSH + Jellyfin | OpenSSH (key-only, LAN-only), power/update policy, Jellyfin as a low-privilege service, Quick Sync transcoding, config backups | ✅ Done, [runbook](docs/phase-2-jellyfin-ssh.md) |
-| 3. Automation | qBittorrent behind a NordVPN kill switch, Prowlarr, Radarr, Sonarr, Bazarr as native services with hardlinked media | 🟡 In progress, [runbook](docs/phase-3-arr-stack.md) |
+| 3. Automation | qBittorrent behind a NordVPN kill switch, Prowlarr, Radarr, Sonarr, Bazarr as native services with hardlinked media | ✅ Done, [runbook](docs/phase-3-arr-stack.md) |
 
 ## Architecture
 

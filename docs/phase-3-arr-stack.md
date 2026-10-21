@@ -219,22 +219,24 @@ The installer doesn't ask about a service. It creates one called `Bazarr` on Loc
 **In the Mac's browser,** `http://<server-ip>:6767`:
 1. **Settings → General → Security**: authentication **Form**, username and strong password.
 2. **Settings → General → Backup**: frequency **Daily**, retention **7** days.
-3. **Settings → Languages**: add **English** and **Portuguese (Brazil)**. Create a languages profile with both, forced subtitles **off**. Make it the default for series and movies.
+3. **Settings → Languages**: add **English** and **Portuguese (Brazil)**. Create **one** languages profile with both, forced subtitles **off**. With two one-language profiles, titles only get the default profile's language. Make it the default for series and movies.
 4. **Settings → Providers → OpenSubtitles.com**: the account from step 1.
 5. **Settings → Library**, tabs **Sonarr** and **Radarr** (Bazarr 1.6): **Enabled** on, address `localhost`, ports `8989` and `7878`, Base URL empty, SSL off, each app's API key. Test, save. No path mappings: everything is on the same machine. Leave **Settings → Integrations** alone. It's for Plex and Jellyfin, not Sonarr or Radarr.
 6. **Settings → Subtitles**: keep **Subtitle Folder: AlongSide Media File**, so Jellyfin finds them next to the video.
 
 ## 9. End-to-end test
 
-1. In Radarr, add a public-domain film from Internet Archive and start a search. Keep its name out of the repo.
-2. Watch it go through: qBittorrent downloads it into `torrents\incomplete`, moves it to `torrents\completed\movies`, then Radarr imports it into `movies\<Title (Year)>`.
+1. In Radarr, add a public-domain film from Internet Archive. Keep its name out of the repo. In the Add dialog pick quality profile **Any** for this film: most Archive films are SD scans, and HD-1080p would reject every release. Tick **Start search for missing movie**. If nothing reaches **Activity → Queue**, use **Interactive Search** on the film's page, which shows why each release was rejected. Check the **Size** column: some Archive items are 4K remuxes of 50 GB or more.
+2. Watch it go through: qBittorrent downloads it into `torrents\incomplete`, moves it to `torrents\completed\movies`, then Radarr imports it into `movies\<Title (Year)>`. With ".torrent only" on, archive.org's servers send most of the data, and a large item can come in at around 70 MB/s.
 3. Check the import made a hardlink, not a copy:
    ```powershell
    fsutil hardlink list "D:\data\media\movies\<folder>\<file>"
    ```
-   It should list two names: one under `torrents\completed\movies` and one under `movies`.
-4. Bazarr should fetch subtitles within a few minutes (**Movies** page). The `.srt` files appear next to the video.
+   It should list two names: one under `torrents\completed\movies` and one under `movies`. If the queue says **Import blocked** and Radarr's log has `Access to the path 'D:\data' is denied`, the apps can't list `D:\data`. Run `setup-arr-services.ps1` again ([roadblock 007](roadblocks/007-import-blocked-by-d-data.md)).
+4. Bazarr should fetch subtitles within a few minutes (**Movies** page). The `.srt` files appear next to the video. Subtitle tracks inside the video count too: a file with embedded English subtitles only gets the Portuguese `.srt`. If a downloaded file is out of time, open it in Bazarr and use **Sync**. Matching against an embedded subtitle track can work better than matching against the audio on old films.
 5. In Jellyfin, the film shows up in Movies (or after **Scan All Libraries**). Play it on a TV and turn the subtitles on.
+
+**If the LG spins forever and never starts,** the file is probably too heavy for its player: 80 Mbit/s with FLAC audio in MKV hung it ([roadblock 008](roadblocks/008-lg-spins-on-a-heavy-mkv.md)). In the LG's Jellyfin app, set **Settings → Playback → Home network quality** to **40 Mbps**. Files above that get converted with Quick Sync (about 1.8x real time for 4K to 4K), and lighter 4K files still play directly. The Fire TV needs no setting: Jellyfin converts 4K to 1080p for it at about 3.5x real time.
 
 ## 10. Nightly backup and VPN check
 
@@ -288,11 +290,11 @@ The launchd job from Phase 2 runs the same script, so nothing else changes on th
 - [x] NordVPN app removed; WireGuard tunnel service connects at boot; LAN still works
 - [x] qBittorrent runs as `NT SERVICE\qBittorrent`, bound to `nord-wg`
 - [x] Kill-switch test passed (tunnel down, then each layer on its own)
-- [ ] Prowlarr with Internet Archive only
+- [x] Prowlarr with Internet Archive only
 - [x] Radarr and Sonarr: hardlinks, HD-1080p picked when adding, 50 GB floor, qBittorrent connected
 - [x] Bazarr: English + Brazilian Portuguese from OpenSubtitles.com
 - [x] Every web page needs a login; all are LAN-only
-- [ ] End-to-end: one item searched, downloaded, hardlinked, subtitled, played on a TV
+- [x] End-to-end: one item searched, downloaded, hardlinked, subtitled, played on a TV
 - [x] Nightly backup includes the Phase 3 apps; the Mac logs `VPN: up`
 - [x] Everything comes back after a reboot with nobody signed in
-- [ ] Journal updated; roadblocks written up
+- [x] Journal updated; roadblocks written up

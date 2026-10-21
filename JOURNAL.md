@@ -237,3 +237,13 @@ A dated log of the build. Short entries; anything that took real effort to solve
 - Free RAM with nobody signed in: 4.0 GB, against 1.0 GB with the admin session open.
 - Still open: Internet Archive is down, so the Prowlarr indexer and the step 9 end-to-end test wait.
 - Live TV was looked at and dropped. It's not part of the project.
+
+## 2026-10-21: Phase 3 step 9, end-to-end test passed
+
+- archive.org was back in the afternoon (200 from the Mac and through the tunnel). The Internet Archive indexer went into Prowlarr with ".torrent only" on, and Prowlarr pushed it to Radarr and Sonarr.
+- Added a public-domain film with profile **Any**. The release was a 56 GB 4K remux and finished in about 15 minutes, with archive.org's web seeds doing most of the work.
+- The import was blocked: Radarr couldn't list `D:\data` while looking up the path's casing ([roadblock 007](docs/roadblocks/007-import-blocked-by-d-data.md)). After a read-only grant on that one folder, it imported as a hardlink: two names, one file, no extra space used.
+- Bazarr had two one-language profiles instead of one with both, and English was already covered by the file's embedded subtitles. After merging the profiles, it downloaded a pt-BR `.srt`. That file was out of time, and **Sync** against the audio didn't fix it. The embedded English subtitles were in time.
+- The LG spun forever on direct play ([roadblock 008](docs/roadblocks/008-lg-spins-on-a-heavy-mkv.md)). With Home network quality at 40 Mbps, it played via Quick Sync at 1.8x real time. The Fire TV got a 1080p conversion at 3.5x real time.
+- Still to watch: when the torrent hits its seed limit (ratio 2 or 14 days), qBittorrent should stop it and Radarr should remove it, leaving the library copy.
+- **Phase 3 done.**

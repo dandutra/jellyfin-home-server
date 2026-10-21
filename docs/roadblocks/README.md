@@ -10,6 +10,8 @@ One file per problem that took real effort to get past, named `NNN-short-title.m
 | 004 | [icacls couldn't find my own account over SSH](004-icacls-workgroup-over-ssh.md) | 2 |
 | 005 | [The Fire TV looped on Big Buck Bunny without ever starting it](005-fire-tv-retry-loop-on-old-mov.md) | 2 |
 | 006 | [After moving the server, nothing could reach it](006-public-network-after-the-move.md) | 3 |
+| 007 | [Radarr couldn't import because it couldn't list `D:\data`](007-import-blocked-by-d-data.md) | 3 |
+| 008 | [The LG spun forever on a heavy MKV](008-lg-spins-on-a-heavy-mkv.md) | 3 |
 
 ## Template
 
