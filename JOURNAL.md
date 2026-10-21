@@ -203,3 +203,9 @@ A dated log of the build. Short entries; anything that took real effort to solve
 - Radarr's qBittorrent download client failed its check: qBittorrent was set to remove torrents and their files at ratio 2 or 14 days. Radarr wants **Stop torrent**, so it can import first and then delete the torrent itself (Remove Completed). Changed it in qBittorrent's web page. The ini now says `Session\ShareLimitAction=Stop`, and Radarr's test passes. Fixed the step 3 table.
 - The Settings → Profiles page has no default to set. The quality profile is picked in the Add Movie dialog, which remembers the last pick. Fixed the runbook.
 - Locked down the config folders: `setup-arr-services.ps1` now cuts inheritance from ProgramData and keeps only SYSTEM, Administrators and the app's account. No file under the qBittorrent, Radarr or Prowlarr folders (2,288 items) still lets in Users, Creator Owner or Everyone. All three pages answer from the Mac, and the logs only have the usual `WorldSid` warning plus Radarr's "No available indexers".
+- Radarr's web setup is done, and Radarr is added to Prowlarr.
+
+## 2026-10-21: Phase 3 step 7, Sonarr service
+
+- Installed Sonarr v4 at the laptop as a Windows service. `setup-arr-services.ps1` switched it to `NT SERVICE\Sonarr` and gave it Modify on `D:\data\media`. The config folder lock worked on Sonarr's 896 files the first time. `/ping` answers from the Mac on 8989, and the log has only the `WorldSid` warning.
+- Free RAM: 1.7 GB with four apps, qBittorrent and Jellyfin running, and the admin still signed in at the laptop.
