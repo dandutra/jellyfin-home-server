@@ -186,3 +186,9 @@ A dated log of the build. Short entries; anything that took real effort to solve
 - In the morning nothing on the server answered from the Mac, and the 04:13 backup pull had failed. Windows had treated the network as new and made it Public, which none of my firewall rules cover ([roadblock 006](docs/roadblocks/006-public-network-after-the-move.md)). Set it back to Private at the laptop.
 - The server had run all night: its 03:30 backup worked (result 0). A manual pull on the Mac fetched `jellyfin-config-20261020-0330.zip`, and Jellyfin was `Healthy`.
 - After the boot: `WireGuardTunnel$nord-wg`, `qBittorrent`, `JellyfinServer` and `sshd` all running, and qBittorrent's UDP ports are on the tunnel only. The step 11 reboot test still needs a run with nobody signed in.
+
+## 2026-10-21: Phase 3 step 5, Prowlarr service
+
+- The installer created the `Prowlarr` service on Local Service. `setup-arr-services.ps1` switched it to `NT SERVICE\Prowlarr` on the first try, and `/ping` answers from the Mac. Prowlarr has no rights on `D:\data\media`.
+- At the end of the install, a second copy started at the desktop, found the service running and quit with a `Fatal` line in the log. That's expected. A `SystemTimeCheck` error just before it was a 504 from Servarr's time server. After the restart under the virtual account, the log has no errors, only the expected warning that it can't change its folder's permissions.
+- Free RAM: 1.8 GB of 7.8. The admin session at the laptop has been signed in since the move, with Edge open. Dell's SupportAssist and TechHub processes use about 1.3 GB between them.

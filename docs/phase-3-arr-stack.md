@@ -160,6 +160,8 @@ Run the SSH commands from a `.ps1` file: through `ssh '...'`, the `$` in `WireGu
 
 **Over SSH:** run `setup-arr-services.ps1` again. It should report `Prowlarr: Running, runs as NT SERVICE\Prowlarr`.
 
+At the end, the installer also starts Prowlarr at the desktop. That copy finds the service already running, opens the browser and quits. Its log shows `Another instance of Prowlarr is already running` and a `Fatal` startup line, which is expected. Under the virtual account, every start logs `Couldn't set permission for C:\ProgramData\Prowlarr ... WorldSid`: Prowlarr tries to give Everyone Modify on its folder, and its account isn't allowed to change permissions. Leave it that way.
+
 **In the Mac's browser,** `http://<server-ip>:9696`:
 1. Create the login: **Forms**, **Authentication Required: Enabled**, your username and a strong password.
 2. **Settings → General → Backups**: interval **1** day, retention **7** days.
