@@ -176,7 +176,7 @@ The apps (Radarr, Sonarr) get added to Prowlarr in steps 6 and 7.
 
 **At the laptop:** install Radarr from <https://radarr.video/#downloads-v3-windows>, with **Install Windows Service**.
 
-**Over SSH:** `setup-arr-services.ps1` again. Check `Radarr: Running, runs as NT SERVICE\Radarr`.
+**Over SSH:** `setup-arr-services.ps1` again. Check `Radarr: Running, runs as NT SERVICE\Radarr`, and that `NT SERVICE\Radarr` has `(M)` on `D:\data\media`. The log in `C:\ProgramData\Radarr\logs` gets the same `WorldSid` warning as Prowlarr on every start.
 
 **In the Mac's browser,** `http://<server-ip>:7878`:
 1. Login: **Forms**, **Enabled**, strong password.

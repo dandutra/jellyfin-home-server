@@ -194,3 +194,9 @@ A dated log of the build. Short entries; anything that took real effort to solve
 - Free RAM: 1.8 GB of 7.8. The admin session at the laptop has been signed in since the move, with Edge open. Dell's SupportAssist and TechHub processes use about 1.3 GB between them.
 - Prowlarr's web setup is done: Forms login, backups daily and kept 7, Allowed Hosts and Trusted Networks empty. Prowlarr only warns about an empty Allowed Hosts when login is off.
 - The Internet Archive indexer test failed: `The SSL connection could not be established` / `Received an unexpected EOF`. It wasn't the tunnel. archive.org timed out from the Mac on the home connection too, while `web.archive.org`, `openlibrary.org`, Debian and the Servarr wiki all loaded through the tunnel. The indexer gets added after step 8.
+
+## 2026-10-21: Phase 3 step 6, Radarr service
+
+- Installed Radarr at the laptop with Install Windows Service. `setup-arr-services.ps1` switched the service to `NT SERVICE\Radarr` on the first try and gave it Modify on `D:\data\media`. `/ping` answers from the Mac.
+- Radarr's log has no errors. After the restart there's only the `WorldSid` warning Prowlarr also logs.
+- Found while checking: the installers give `BUILTIN\Users` Modify on `C:\ProgramData\Radarr` and `C:\ProgramData\Prowlarr`, `bin` included. A standard account could swap the program the service runs. Not changed yet.
