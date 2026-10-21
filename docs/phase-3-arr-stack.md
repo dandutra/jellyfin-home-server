@@ -165,7 +165,10 @@ At the end, the installer also starts Prowlarr at the desktop. That copy finds t
 **In the Mac's browser,** `http://<server-ip>:9696`:
 1. Create the login: **Forms**, **Authentication Required: Enabled**, your username and a strong password.
 2. **Settings → General → Backups**: interval **1** day, retention **7** days.
-3. **Indexers → Add Indexer → Internet Archive.** Test, then save. It's the only source.
+3. **Indexers → Add Indexer → Internet Archive.** It's the only source. Keep the defaults (Redirect off, Sync Profile Standard, Seed Ratio empty so qBittorrent's limit applies, no tags), except:
+   - **Download using .torrent only. No Magnets.**: **On**. The Archive's `.torrent` files list archive.org's servers as web seeds, and many items have few other peers. A magnet link doesn't carry them.
+
+   Test, then save. If the test fails with an SSL or connection error, open `https://archive.org` from the Mac: when archive.org itself is down, it fails there too.
 
 The apps (Radarr, Sonarr) get added to Prowlarr in steps 6 and 7.
 
