@@ -23,7 +23,8 @@
       everyone else's except SYSTEM and Administrators. Gives
       qBittorrent, Sonarr, Radarr and Bazarr modify rights on D:\data\media.
       Prowlarr gets nothing on D:. Jellyfin's read-only access is unchanged.
-    - Opens each web page's port to the local subnet on the Private profile.
+    - Opens each web page's port to the local subnet on the Private profile,
+      and turns off inbound rules for programs in the apps' config folders.
     - Blocks qbittorrent.exe outbound on the physical adapters, and turns
       off inbound rules for qbittorrent.exe that Windows created when
       qBittorrent first ran at the desktop.
@@ -129,6 +130,18 @@ foreach ($a in $present) {
     Remove-NetFirewallRule -Name $name -ErrorAction SilentlyContinue
     New-NetFirewallRule -Name $name -DisplayName "$($a.Service) web page (LAN)" -Direction Inbound -Action Allow `
         -Protocol TCP -LocalPort $a.Port -Profile Private -RemoteAddress LocalSubnet | Out-Null
+}
+# Bazarr's installer adds an allow-all inbound rule for its python.exe (any port,
+# any address, every profile), which would bypass the LAN-only rule above.
+$filters = @(Get-NetFirewallApplicationFilter)
+foreach ($a in $present) {
+    $filters | Where-Object { $_.Program -like "$($a.Config)\*" } |
+        Get-NetFirewallRule |
+        Where-Object { $_.Direction -eq 'Inbound' -and $_.Enabled -eq 'True' } |
+        ForEach-Object {
+            Disable-NetFirewallRule -Name $_.Name
+            Write-Output "Disabled inbound rule: $($_.DisplayName)"
+        }
 }
 
 # 4. qBittorrent kill switch: nothing from qbittorrent.exe leaves through a physical

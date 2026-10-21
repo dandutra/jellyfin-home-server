@@ -209,3 +209,11 @@ A dated log of the build. Short entries; anything that took real effort to solve
 
 - Installed Sonarr v4 at the laptop as a Windows service. `setup-arr-services.ps1` switched it to `NT SERVICE\Sonarr` and gave it Modify on `D:\data\media`. The config folder lock worked on Sonarr's 896 files the first time. `/ping` answers from the Mac on 8989, and the log has only the `WorldSid` warning.
 - Free RAM: 1.7 GB with four apps, qBittorrent and Jellyfin running, and the admin still signed in at the laptop.
+- Sonarr's web setup is done, and Sonarr is added to Prowlarr.
+
+## 2026-10-21: Phase 3 step 8, Bazarr service
+
+- Downloaded the installer from bazarr.media. It asked only for the install folder (`C:\ProgramData\Bazarr\bin`), then to confirm. There was no service question, but it created a `Bazarr` service on Local System, run by its own NSSM with its bundled WinPython. The data folders (`config`, `db`, `log`, `backup`) went to `C:\ProgramData\Bazarr`, which is where both scripts expected them.
+- `setup-arr-services.ps1` switched it to `NT SERVICE\Bazarr` on the first try. Both `python.exe` processes run under that account, port 6767 answers from the Mac, and the log is clean. The config lock covered all 18,182 files.
+- The installer also added an inbound firewall rule for its `python.exe`: any port, any address, every profile, Public included. That bypasses the LAN-only rule for 6767. The script now turns off inbound rules for any program inside an app's config folder, and it turned that one off. All five web pages still answer from the Mac.
+- Free RAM fell to about 1.0 GB. Bazarr's Python uses about 180 MB. The admin session at the laptop (Edge, Explorer) and Dell's SupportAssist and TechHub use more than any app.

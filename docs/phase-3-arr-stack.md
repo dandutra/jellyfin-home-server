@@ -16,7 +16,7 @@ Goal: the server finds, downloads, renames and files legal content by itself, fe
 | Prowlarr | Keeps the list of search sources (Internet Archive) and hands it to Radarr and Sonarr | `:9696` | `NT SERVICE\Prowlarr` |
 | Radarr | Movies: searches, sends to qBittorrent, renames, hardlinks into `movies\` | `:7878` | `NT SERVICE\Radarr` |
 | Sonarr | TV: the same, into `tv\` | `:8989` | `NT SERVICE\Sonarr` |
-| Bazarr | Subtitles in English and Brazilian Portuguese, saved next to the videos | `:6767` | `NT SERVICE\<Bazarr service>` |
+| Bazarr | Subtitles in English and Brazilian Portuguese, saved next to the videos | `:6767` | `NT SERVICE\Bazarr` |
 
 Why it's built this way: [ADR 006](decisions/006-service-accounts.md) (accounts), [007](decisions/007-config-and-media-layout.md) (folders and hardlinks), [010](decisions/010-vpn-kill-switch-native.md) (VPN and kill switch), [011](decisions/011-qbittorrent-under-nssm.md) (qBittorrent as a service).
 
@@ -210,10 +210,11 @@ The apps (Radarr, Sonarr) get added to Prowlarr in steps 6 and 7.
 
 **At the laptop:**
 1. Create a free account at <https://www.opensubtitles.com>. It's a different site from the old opensubtitles.org. Save the password in the password manager.
-2. Download the Windows installer (`bazarr.zip`) from <https://github.com/morpheus65535/bazarr/releases>, unzip it and run it. If it asks for an install folder, choose `C:\ProgramData\Bazarr\bin`, so its account can update it without admin rights. Keep the data folder `C:\ProgramData\Bazarr`. Choose the Windows service option.
-3. Note in the journal what the installer asked and the service name it created. The script finds the service by name, but this hasn't been seen yet.
+2. Download the Windows installer from <https://www.bazarr.media/#download> and run it. It asks only for the install folder: type `C:\ProgramData\Bazarr\bin`, so its account can update it without admin rights.
 
-**Over SSH:** `setup-arr-services.ps1` again. Check that the Bazarr line says `runs as NT SERVICE\<its service name>`.
+The installer doesn't ask about a service. It creates one called `Bazarr` on Local System, run by its own copy of NSSM in `bin`. Bazarr's settings, database, logs and backups go one level up, in `C:\ProgramData\Bazarr`. The installer also adds an inbound firewall rule named `Bazarr` for its `python.exe`, which allows any port from any address on every profile.
+
+**Over SSH:** `setup-arr-services.ps1` again. Check `Bazarr: Running, runs as NT SERVICE\Bazarr` and `Disabled inbound rule: Bazarr`. NSSM reports Running even when the program it starts has crashed, so also check that `http://<server-ip>:6767` loads.
 
 **In the Mac's browser,** `http://<server-ip>:6767`:
 1. **Settings → General → Security**: authentication **Form**, username and strong password.
