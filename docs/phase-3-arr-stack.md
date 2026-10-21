@@ -221,7 +221,7 @@ The installer doesn't ask about a service. It creates one called `Bazarr` on Loc
 2. **Settings → General → Backup**: frequency **Daily**, retention **7** days.
 3. **Settings → Languages**: add **English** and **Portuguese (Brazil)**. Create a languages profile with both, forced subtitles **off**. Make it the default for series and movies.
 4. **Settings → Providers → OpenSubtitles.com**: the account from step 1.
-5. **Settings → Sonarr** and **Settings → Radarr**: address `localhost`, ports `8989` and `7878`, each app's API key. Test, save.
+5. **Settings → Library**, tabs **Sonarr** and **Radarr** (Bazarr 1.6): **Enabled** on, address `localhost`, ports `8989` and `7878`, Base URL empty, SSL off, each app's API key. Test, save. No path mappings: everything is on the same machine. Leave **Settings → Integrations** alone. It's for Plex and Jellyfin, not Sonarr or Radarr.
 6. **Settings → Subtitles**: keep **Subtitle Folder: AlongSide Media File**, so Jellyfin finds them next to the video.
 
 ## 9. End-to-end test
