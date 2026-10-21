@@ -217,3 +217,8 @@ A dated log of the build. Short entries; anything that took real effort to solve
 - `setup-arr-services.ps1` switched it to `NT SERVICE\Bazarr` on the first try. Both `python.exe` processes run under that account, port 6767 answers from the Mac, and the log is clean. The config lock covered all 18,182 files.
 - The installer also added an inbound firewall rule for its `python.exe`: any port, any address, every profile, Public included. That bypasses the LAN-only rule for 6767. The script now turns off inbound rules for any program inside an app's config folder, and it turned that one off. All five web pages still answer from the Mac.
 - Free RAM fell to about 1.0 GB. Bazarr's Python uses about 180 MB. The admin session at the laptop (Edge, Explorer) and Dell's SupportAssist and TechHub use more than any app.
+- Bazarr's web setup is done: Form login, daily backups kept 7, English and Brazilian Portuguese, OpenSubtitles.com, and Sonarr and Radarr linked. In Bazarr 1.6, Sonarr and Radarr are under **Settings → Library**. **Integrations** is for Plex and Jellyfin.
+
+## 2026-10-21: Internet Archive still unreachable
+
+- The retry before step 9 failed again: TCP to `207.241.224.2:443` times out from the home connection, and the server gets a TLS EOF through the tunnel. A fetch from an outside cloud service was refused (`ECONNREFUSED`). Instatus shows hundreds of outage reports in the last hour, and an earlier spike on 2026-10-20. It's archive.org, not this setup. The indexer and step 9 wait until it's back.
