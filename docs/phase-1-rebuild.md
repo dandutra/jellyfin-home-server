@@ -200,7 +200,7 @@ Take photos of each step for `docs/img/`. Make sure no stickers with the service
    Start-Service wuauserv, bits
    ```
    Then press **Check for updates** again.
-3. **Drivers:** install **Dell Command | Update** from Dell's site and apply everything. This brings in the Intel graphics driver, which Quick Sync needs in Phase 2.
+3. **Drivers:** install **Dell Command | Update** from Dell's site and apply everything. This brings in the Intel graphics driver, which Quick Sync needs in Phase 2. Uninstall it once everything is applied. Version 5.7.2 brings in Dell Core Services and TechHub, about 800 MB of RAM running all the time, and the server gets later drivers from Windows Update.
 4. **Hostname:** in an admin PowerShell, run `Rename-Computer -NewName homeserver -Restart`.
 5. **Turn off device encryption** ([ADR 009](decisions/009-no-bitlocker.md)), before setting up the SSD so Windows doesn't encrypt D: too. In an admin PowerShell:
    1. Stop Windows from turning it back on by itself:

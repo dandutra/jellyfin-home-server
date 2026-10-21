@@ -247,3 +247,10 @@ A dated log of the build. Short entries; anything that took real effort to solve
 - The LG spun forever on direct play ([roadblock 008](docs/roadblocks/008-lg-spins-on-a-heavy-mkv.md)). With Home network quality at 40 Mbps, it played via Quick Sync at 1.8x real time. The Fire TV got a 1080p conversion at 3.5x real time.
 - Still to watch: when the torrent hits its seed limit (ratio 2 or 14 days), qBittorrent should stop it and Radarr should remove it, leaving the library copy.
 - **Phase 3 done.**
+
+## 2026-10-21: Dell software removed
+
+- With nobody signed in, Dell's programs used about 1.9 GB of the 8 GB of RAM. SupportAssist alone used 1 GB, and TechHub with its helpers about 800 MB. Free RAM was 2.9 GB.
+- Silently uninstalled SupportAssist, its OS Recovery plugin and Dell Core Services over SSH. That also deleted the Dell Update service that Dell Command | Update 5.7.1 needs, so `dcu-cli` failed. A Windows Installer repair failed with 1612: the source file was gone.
+- Reinstalled Command | Update from Dell: 5.7.2, with the SHA-256 checked against Dell's page and a valid Dell signature. It works, but its installer brings Core Services and TechHub back, so the updater can't be kept without about 800 MB of Dell services.
+- Removed Command | Update and Core Services as well. No Dell services, processes, tasks or Store apps are left, and free RAM is 4.3 GB. Drivers come from Windows Update (no policy blocks them). BIOS updates mean checking Dell's support page for the 3410 every few months.
