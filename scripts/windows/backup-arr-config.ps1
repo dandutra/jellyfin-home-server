@@ -5,7 +5,7 @@
 
 .DESCRIPTION
     - Sonarr, Radarr, Prowlarr and Bazarr: copies the newest zip from each
-      app's own scheduled backup (set to daily in the apps). Those are made
+      app's own backups (scheduled daily in the apps, or Backup Now). Those are made
       with SQLite's online backup, so the apps keep running. A zip older
       than 2 days is reported as stale.
     - qBittorrent: stops it for the copy (a few seconds), because its
@@ -37,11 +37,12 @@ param(
 $ErrorActionPreference = 'Stop'
 $homeDir = Join-Path $env:ProgramData 'homeserver'
 $qbtProfile = Join-Path $env:ProgramData 'qBittorrent'
-# Where each app keeps its scheduled backups.
+# Where each app keeps its backups. The *arr apps split them into scheduled,
+# manual (Backup Now) and update subfolders; the newest zip in any of them is used.
 $appBackups = [ordered]@{
-    Sonarr   = Join-Path $env:ProgramData 'Sonarr\Backups\scheduled'
-    Radarr   = Join-Path $env:ProgramData 'Radarr\Backups\scheduled'
-    Prowlarr = Join-Path $env:ProgramData 'Prowlarr\Backups\scheduled'
+    Sonarr   = Join-Path $env:ProgramData 'Sonarr\Backups'
+    Radarr   = Join-Path $env:ProgramData 'Radarr\Backups'
+    Prowlarr = Join-Path $env:ProgramData 'Prowlarr\Backups'
     Bazarr   = Join-Path $env:ProgramData 'Bazarr\backup'
 }
 
@@ -101,7 +102,7 @@ try {
     # 1. The apps' own backups.
     foreach ($app in $appBackups.Keys) {
         if (-not (Get-Service | Where-Object Name -like "*$app*")) { continue }
-        $newest = Get-ChildItem -Path $appBackups[$app] -Filter '*.zip' -ErrorAction SilentlyContinue |
+        $newest = Get-ChildItem -Path $appBackups[$app] -Filter '*.zip' -Recurse -ErrorAction SilentlyContinue |
             Sort-Object LastWriteTime -Descending | Select-Object -First 1
         if (-not $newest) { $problems += "$app has no backup"; continue }
         if ($newest.LastWriteTime -lt (Get-Date).AddDays(-2)) { $problems += "$app backup is stale" }
